@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body { display:flex; justify-content:center; align-items:center; height:100vh; background: #2575fc; font-family: Arial, sans-serif;}
+        .container { background:#fff; padding:2rem; border-radius:12px; width:100%; max-width:400px; box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+        h2 { text-align:center; margin-bottom:1.5rem; color:#333; }
+        .form-group { margin-bottom:1rem; }
+        label { display:block; margin-bottom:0.5rem; color:#555; }
+        input { width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:6px; font-size:1rem; }
+        button { width:100%; padding:0.75rem; background-color:#6a11cb; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+        button:hover { background-color:#2575fc; }
+        .register-link { text-align:center; margin-top:1rem; font-size:0.9rem; }
+        .register-link a { color:#6a11cb; text-decoration:none; }
+        .register-link a:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Iniciar Sesión</h2>
+        <form method="post" action="/login">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit">Ingresar</button>
+        </form>
+        <div class="register-link">
+            ¿No tenés cuenta? <a href="/register">Registrate aquí</a>
+        </div>
+    </div>
+</body>
+</html>
