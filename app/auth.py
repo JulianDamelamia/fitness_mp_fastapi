@@ -21,6 +21,12 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password, hashed)
 
+def authenticate_user(username_or_email: str, password: str):
+    for user in fake_user_db.values():
+        if (user["username"] == username_or_email or user["email"] == username_or_email) and user["hashed_password"] == password:
+            return user
+    return None
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

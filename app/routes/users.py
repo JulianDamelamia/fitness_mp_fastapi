@@ -24,4 +24,4 @@ def delete_user(username: str):
     if username not in fake_user_db:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     del fake_user_db[username]
-    return {"username": username, "message": "Usuario eliminado"}
+    return UserResponse(username=username, message="Usuario eliminado exitosamente")
