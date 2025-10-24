@@ -23,7 +23,8 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def authenticate_user(username_or_email: str, password: str):
     for user in fake_user_db.values():
-        if (user["username"] == username_or_email or user["email"] == username_or_email) and user["hashed_password"] == password:
+        if (user["username"] == username_or_email or user["email"] == username_or_email) and verify_password(password, user["hashed_password"]):
+            print("gr8 succes")
             return user
     return None
 

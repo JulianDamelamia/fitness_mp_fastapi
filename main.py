@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from app.routes import users, home
+from app.schemas import UserResponse
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -22,8 +23,8 @@ def register_page(request: Request):
 
 @app.post("/login")
 def login(username: str = Form(...), password: str = Form(...)):
-    return {"username": username, "password": password}
+    return UserResponse(username=username, message="Login successful")
 
 @app.post("/register")
 def register(username: str = Form(...), password: str = Form(...)):
-    return {"username": username}
+    return UserResponse(username=username, message="Registration successful")

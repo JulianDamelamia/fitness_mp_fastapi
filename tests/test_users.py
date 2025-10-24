@@ -1,8 +1,8 @@
+import pytest
 from fastapi.testclient import TestClient
 from main import app
 from app.db import fake_user_db
 from app.routes import users
-import pytest
 client = TestClient(app)
 
 
@@ -16,9 +16,12 @@ def clear_db():
 def test_register_and_delete_user():
     '''Me registro y luego elimino el usuario'''
     response = client.post(
-        "/users/register",
-        data={"username": "julian", "password": "notengoventanas"}
-    )
+                            "/users/register",
+                            data={
+                                "username": "julian",
+                                "password": "notengoventanas"
+                                }
+                            )
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "julian"
