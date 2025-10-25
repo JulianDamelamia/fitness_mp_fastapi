@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 
+## --- USER SCHEMAS ---
 class UserBase(BaseModel):
     username: str
 
@@ -25,3 +26,21 @@ class UserProfileResponse(UserBase):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+## --- EXERCISE SCHEMAS ---
+# Schema base con campos comunes para ejercicios
+class ExerciseBase(BaseModel):
+    name: str
+    primary_muscles: List[str]
+    secondary_muscles: List[str]
+
+# Schema para crear un nuevo ejercicio
+class ExerciseCreate(ExerciseBase):
+    pass
+
+# Schema para leer un ejercicio desde la API
+class Exercise(ExerciseBase):
+    id: int
+
+    class Config:
+        from_attributes = True # Allows Pydantic to read from ORM models
