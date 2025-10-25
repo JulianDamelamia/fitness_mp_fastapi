@@ -1,4 +1,4 @@
-from app.db import fake_user_db
+from app.database import fake_user_db
 from app.services.auth_services import hash_password, create_access_token, authenticate_user
 from app.schemas import UserProfileResponse, TokenResponse, UserResponse
 
