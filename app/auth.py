@@ -26,7 +26,7 @@ def authenticate_user(username_or_email: str, password: str):
         if (user["username"] == username_or_email or user["email"] == username_or_email) and verify_password(password, user["hashed_password"]):
             print("gr8 succes")
             return user
-    return None
+    raise ValueError("Usuario o contraseña incorrectos")
 
 def create_access_token(data: dict):
     to_encode = data.copy()

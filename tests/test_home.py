@@ -78,17 +78,3 @@ def test_login_with_username_and_email():
     token_email = response_login_email.json()["access_token"]
     assert token_email  # tiene que devolver token
 
-    # # Probar endpoint protegido con token
-    # response_me_user = client.get(
-    #     "/home/me",
-    #     headers={"Authorization": f"Bearer {token_user}"}
-    # )
-    # assert response_me_user.status_code == 200
-    # assert response_me_user.json()["username"] == "julian"
-
-    # response_me_email = client.get(
-    #     "/home/me",
-    #     headers={"Authorization": f"Bearer {token_email}"}
-    # )
-    # assert response_me_email.status_code == 200
-    # assert response_me_email.json()["username"] == "julian"
