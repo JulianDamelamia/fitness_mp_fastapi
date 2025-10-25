@@ -1,4 +1,4 @@
-from app.db import fake_user_db
+from app.database import fake_user_db
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
