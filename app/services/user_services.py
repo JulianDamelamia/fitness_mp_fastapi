@@ -1,8 +1,6 @@
 from app.db import fake_user_db
-from app.auth import hash_password, verify_password, create_access_token,authenticate_user
-from jose import jwt, JWTError
-from app.auth import SECRET_KEY, ALGORITHM
-from app.schemas import UserProfileResponse, Token, UserResponse
+from app.services.auth_services import hash_password, create_access_token, authenticate_user
+from app.schemas import UserProfileResponse, TokenResponse, UserResponse
 
 class UserService:
     def __init__(self):
@@ -13,43 +11,31 @@ class UserService:
             return False
         return True
     
-    def create_user(self, username:str, password:str, full_name:str, email:str):
+    
+    def create_user(self, username:str, email:str, password:str):
         if not self.validate_unique_user(username, email):
             raise ValueError("Usuario o email ya existe")
 
-        hashed = hash_password(password)
+        hashed_password = hash_password(password)
+        user_id = len(fake_user_db) + 1
         self.db[username] = {
+            "id": user_id,
             "username": username,
-            "hashed_password": hashed,
-            "full_name": full_name,
-            "email": email
+            "email": email,
+            "hashed_password": hashed_password
         }
         
         return UserProfileResponse(
-            username=username,
+            id=user_id,
+            username = username,
             email=email,
-            full_name=full_name,
             message="Usuario registrado exitosamente"
         )
 
     def login(self, username_or_email, password):
-        # Buscar usuario
-        user = authenticate_user(username_or_email, password)    
+        user = authenticate_user(username_or_email, password)
+        if not user:
+            raise ValueError('usuario o contraseña incorrectos')
         token = create_access_token({"sub": user["username"]})
-        return Token(access_token=token, token_type="bearer")
+        return TokenResponse(access_token=token, token_type="bearer")
 
-    def get_user_from_token(self, token):
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            username = payload.get("sub")
-            if username is None or username not in self.db:
-                raise ValueError("Token inválido")
-            user = self.db[username]
-            return UserProfileResponse(
-                username=user["username"],
-                email=user["email"],
-                full_name=user["full_name"],
-                message="Perfil obtenido correctamente"
-            )
-        except JWTError:
-            raise ValueError("Token inválido")

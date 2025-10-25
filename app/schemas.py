@@ -4,7 +4,6 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
 
-
 class UserCreate(UserBase):
     email: EmailStr
     username: str
@@ -19,10 +18,10 @@ class UserResponse(UserBase):
     message: str
 
 class UserProfileResponse(UserBase):
+    id: int
     email: EmailStr
-    full_name: Optional[str] = None
     message: Optional[str] = None
 
-class Token(BaseModel):
+class TokenResponse(BaseModel):
     access_token: str
-    token_type: str
+    token_type: str = "bearer"
