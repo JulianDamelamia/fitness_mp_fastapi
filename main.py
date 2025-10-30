@@ -10,19 +10,11 @@ from app.routes import users, home
 
 # Modulos propios
 from app import models, schemas
-from app.database import SessionLocal, engine
+from app.db.session import SessionLocal, engine
+from app.api.dependencies import get_db
 
 # Crear las tablas en la base de datos (si no existen)
 models.Base.metadata.create_all(bind=engine)
-
-
-# Dependencia para obtener la sesión de la base de datos
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # inicializar la aplicacion FastAPI
