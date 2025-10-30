@@ -12,6 +12,7 @@ from app.routes import users, home
 from app import models, schemas
 from app.db.session import SessionLocal, engine
 from app.api.dependencies import get_db
+from app.db.session import Base
 
 # Crear las tablas en la base de datos (si no existen)
 models.Base.metadata.create_all(bind=engine)

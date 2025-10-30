@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, JSON
-from app.database import Base
+from app.db.session import Base
 
 
 # --- MODELOS AUTH ---
