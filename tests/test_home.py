@@ -5,7 +5,6 @@ from main import app
 from app.db.session import fake_user_db
 
 client = TestClient(app)
-client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def clear_db():
