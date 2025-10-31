@@ -15,6 +15,10 @@ from app.routes import users, home
 from app.schemas import Exercise, ExerciseCreate # Debes importar los schemas para los endpoints
 
 
+# borrar tablas, util para desarrollo
+# print("Borrando todas las tablas y recreando...")
+# models.Base.metadata.drop_all(bind=engine)
+
 # Crear las tablas en la base de datos (si no existen)
 Base.metadata.create_all(bind=engine)
 
