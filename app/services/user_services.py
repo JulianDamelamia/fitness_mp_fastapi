@@ -1,6 +1,7 @@
-from app.database import fake_user_db
-from app.services.auth_services import hash_password, create_access_token, authenticate_user
+from app.db.session import fake_user_db # <- Temporalmente para no romper el código dependiente
+from app.core.security import hash_password, create_access_token
 from app.schemas import UserProfileResponse, TokenResponse, UserResponse
+from app.services.auth_service import authenticate_user
 
 class UserService:
     def __init__(self):

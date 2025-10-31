@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from app.database import fake_user_db
+from app.db.session import fake_user_db
 from app.routes import users
 client = TestClient(app)
 

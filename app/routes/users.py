@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import JSONResponse
 from app.schemas import UserResponse
-from app.services.auth_services import hash_password
-from app.database import fake_user_db
+from app.core.security import hash_password
+from app.db.session import fake_user_db
 
 router = APIRouter()
 
