@@ -1,41 +1,8 @@
+# app/models/fitness.py
+from app.db.session import Base # Importa Base desde la nueva ubicación
 from sqlalchemy import Column, Integer, String, JSON, ForeignKey, Boolean, Text, Float,DateTime
 from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
-from app.database import Base
-
-
-# --- MODELOS AUTH ---
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    email = Column(String, unique=True, index=True)
-
-
-# --- MODELOS EJERCICIOS --- (abstracto)
-# class Exercise(Base):
-#     __tablename__ = "exercises"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     name = Column(String, index=True, unique=True)
-#     session_template_id = Column(Integer, ForeignKey("session_templates.id"))
-    
-#     # Usamos JSON para almacenar listas de músculos
-#     primary_muscles = Column(JSON)   # e.g., ["pecho", "tríceps"]
-#     secondary_muscles = Column(JSON) # e.g., ["hombros"]
-
-# planes
-class Plan(Base):
-    __tablename__ = "plans"
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    description = Column(Text, nullable=True)
-    price = Column(Integer)
-    trainer_id = Column(Integer, ForeignKey("users.id"))
-
-    routine = relationship("Routine", back_populates="plan")
 
 # RUTINA
 class Routine(Base):
