@@ -2,10 +2,12 @@ from app.db.session import fake_user_db # <- Temporalmente para no romper el có
 from app.core.security import verify_password, create_access_token # <- NUEVOS IMPORTS
 from typing import Optional, Dict
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
 
 # Esta función de acceso a datos (que idealmente iría en un Repository) se queda
 # en el Servicio por ahora.

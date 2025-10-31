@@ -1,3 +1,5 @@
+"""
+BORRAR, FUE MODULARIZADO EN CARPETA MODELS
 from sqlalchemy import Column, Integer, String, JSON
 from app.db.session import Base
 
@@ -22,3 +24,4 @@ class Exercise(Base):
     # Usamos JSON para almacenar listas de músculos
     primary_muscles = Column(JSON)   # e.g., ["pecho", "tríceps"]
     secondary_muscles = Column(JSON) # e.g., ["hombros"]
+    """

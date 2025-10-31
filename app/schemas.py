@@ -1,3 +1,5 @@
+"""
+BORRAR, FUE MODULARIZADO EN CARPETA SCHEMAS
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
@@ -43,4 +45,4 @@ class Exercise(ExerciseBase):
     id: int
 
     class Config:
-        from_attributes = True # Allows Pydantic to read from ORM models
+        from_attributes = True # Allows Pydantic to read from ORM models"""
