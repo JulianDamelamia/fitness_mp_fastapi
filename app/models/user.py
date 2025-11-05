@@ -1,9 +1,7 @@
 # app/models/user.py
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from app.models.business import Plan
-from app.db.session import Base # Importa Base desde la nueva ubicación
-
+from app.db.session import Base
 # --- MODELOS AUTH ---
 class User(Base):
     __tablename__ = "users"
