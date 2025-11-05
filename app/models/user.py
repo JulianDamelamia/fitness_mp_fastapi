@@ -15,3 +15,11 @@ class User(Base):
 
     created_plans = relationship('Plan', back_populates='creator')
     created_routines = relationship('Routine', back_populates='creator')
+   
+    purchases = relationship("Purchase", back_populates="user")
+    purchased_plans = relationship(
+        "Plan",
+        secondary="purchases",
+        viewonly=True,
+        back_populates="buyers"
+    )
