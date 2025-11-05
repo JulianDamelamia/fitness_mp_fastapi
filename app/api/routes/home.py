@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
 from app.services.user_services import UserService
 
-router = APIRouter()
+router = APIRouter( prefix="/home", tags=["Home"])
 user_service = UserService()
 templates = Jinja2Templates(directory="app/templates")
 

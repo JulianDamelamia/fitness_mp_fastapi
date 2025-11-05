@@ -1,6 +1,6 @@
 # app/schemas/fitness.py
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 ## --- EXERCISE SCHEMAS ---
 # Schema base con campos comunes para ejercicios
@@ -19,3 +19,26 @@ class Exercise(ExerciseBase):
 
     class Config:
         from_attributes = True # Allows Pydantic to read from ORM models
+
+
+class SessionBase(BaseModel):
+    name: str
+
+class SessionCreate(SessionBase):
+    pass
+
+class Session(SessionBase):
+    id: int
+    class Config:
+        orm_mode = True
+class RoutineBase(BaseModel):
+    name: str
+
+class RoutineCreate(RoutineBase):
+    session_ids: Optional[List[int]] = []
+
+class Routine(RoutineBase):
+    id: int
+    sessions: List[Session] = []
+    class Config:
+        orm_mode = True
