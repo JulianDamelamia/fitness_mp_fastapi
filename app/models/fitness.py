@@ -27,7 +27,7 @@ class Routine(Base):
         secondary = routines_sessions,
         back_populates='routines')
 
-
+ 
 class Session(Base):
     __tablename__ = "sessions"
     id = Column(Integer, primary_key=True, index = True)
