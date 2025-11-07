@@ -1,6 +1,5 @@
 from app.db.session import Base
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean,DateTime, Float,Table, func
-# from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
 from app.models.associations import plans_routines
 # Formato:
