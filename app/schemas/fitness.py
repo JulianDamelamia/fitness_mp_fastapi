@@ -31,6 +31,7 @@ class Session(SessionBase):
     id: int
     class Config:
         orm_mode = True
+
 class RoutineBase(BaseModel):
     name: str
 
