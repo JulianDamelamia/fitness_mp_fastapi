@@ -2,44 +2,52 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-## --- EXERCISE SCHEMAS ---
+## --- SCHEMAS ejercicio ---
 # Schema base con campos comunes para ejercicios
 class ExerciseBase(BaseModel):
-    name: str
-    primary_muscles: List[str]
-    secondary_muscles: List[str]
+    id: Optional[int] = None
+    exercise_name: str
+    target_sets: int
+    target_reps: int
+    target_weight: Optional[float] = None
+    primary_muscles: Optional[List[str]] = None
+    secondary_muscles: Optional[List[str]] = None
 
-# Schema para crear un nuevo ejercicio
 class ExerciseCreate(ExerciseBase):
     pass
 
-# Schema para leer un ejercicio desde la API
-class Exercise(ExerciseBase):
+class ExerciseResponse(ExerciseBase):
     id: int
 
-    class Config:
-        from_attributes = True # Allows Pydantic to read from ORM models
+    class ConfigDict:
+        from_attributes = True
 
-
+## --- SCHEMAS sesiones ---
 class SessionBase(BaseModel):
-    name: str
+    id: Optional[int] = None   
+    session_name: Optional[str] = None
 
 class SessionCreate(SessionBase):
-    pass
+    exercises: List[ExerciseCreate] = []
 
-class Session(SessionBase):
+class SessionResponse(SessionBase):
     id: int
-    class Config:
-        orm_mode = True
+    exercises: List[ExerciseResponse]
 
+    class ConfigDict:
+        from_attributes = True
+
+## --- SCHEMAS rutinas ---
 class RoutineBase(BaseModel):
     name: str
 
 class RoutineCreate(RoutineBase):
-    session_ids: Optional[List[int]] = []
+    sessions: List[SessionCreate] = []
 
-class Routine(RoutineBase):
+class RoutineResponse(RoutineBase):
     id: int
-    sessions: List[Session] = []
-    class Config:
-        orm_mode = True
+    creator_id: int
+    sessions: Optional[List[SessionResponse]] = None
+    class ConfigDict:
+        from_attributes = True
+

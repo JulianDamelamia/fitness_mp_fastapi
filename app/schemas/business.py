@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from app.schemas.fitness import Routine
+from app.schemas.fitness import RoutineBase
 
 class PlanBase(BaseModel):
     name: str
@@ -11,6 +11,6 @@ class PlanCreate(PlanBase):
 
 class Plan(PlanBase):
     id: int
-    routines: List[Routine] = []
-    class Config:
-        orm_mode = True
+    routines: List[RoutineBase] = []
+    class ConfigDict:
+        from_attributes = True

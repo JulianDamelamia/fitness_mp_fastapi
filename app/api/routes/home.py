@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
 from app.services.user_services import UserService
 
-router = APIRouter( prefix="/home", tags=["Home"])
+router = APIRouter(tags=["Home"])
 user_service = UserService()
 templates = Jinja2Templates(directory="app/templates")
 
@@ -49,13 +49,13 @@ async def register_post(
              "form_data": {"username": username, "email": email}}
         )
     user_service.create_user(username, email, password)
-    return RedirectResponse(url="/login", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
-@router.get("/login", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def login_get(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.post("/login")
+@router.post("/")
 async def login_post(
     request: Request,
     username_or_email: str = Form(...),
@@ -68,7 +68,7 @@ async def login_post(
                             status_code = status.HTTP_401_UNAUTHORIZED,
                             detail =  "usuario o contraseña inválidos"
                             )                
-    response = RedirectResponse(url="/dashboard", status_code=303)
+    response = RedirectResponse(url="/sessions/", status_code=303)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
 

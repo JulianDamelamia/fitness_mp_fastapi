@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}App de Entrenamiento{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><strong><a href="/">Inicio</a></strong></li>
+    </ul>
+    <ul>
+      <li><a href="/routines">Rutinas</a></li>
+      <li><a href="/sessions">Sesiones</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

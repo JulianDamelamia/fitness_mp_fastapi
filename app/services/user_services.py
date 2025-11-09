@@ -40,3 +40,13 @@ class UserService:
         token = create_access_token({"sub": user["username"]})
         return TokenResponse(access_token=token, token_type="bearer")
 
+    def get_user_by_email(self, email: str):
+        for user in self.db.values():
+            if user["email"] == email:
+                return UserResponse(
+                    id=user["id"],
+                    username=user["username"],
+                    email=user["email"],
+                    message="Usuario encontrado exitosamente"
+                )
+        return None
