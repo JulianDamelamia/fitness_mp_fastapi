@@ -1,42 +1,45 @@
-from app.db.session import fake_user_db # <- Temporalmente para no romper el código dependiente
+from sqlalchemy.orm import Session
+from app.models.user import User
 from app.core.security import hash_password, create_access_token
-from app.schemas import UserProfileResponse, TokenResponse, UserResponse
+from app.schemas import UserProfileResponse, TokenResponse
 from app.services.auth_service import authenticate_user
+
 
 class UserService:
     def __init__(self):
-        self.db = fake_user_db
+        pass
 
-    def validate_unique_user(self, username:str, email:str):
-        if username in self.db or any(u["email"] == email for u in self.db.values()):
-            return False
+    def validate_unique_user(self, db: Session, username:str, email:str) -> bool:
+        if db.query(User).filter(User.username == username).first():
+            raise ValueError("El nombre de usuario ya existe")
+        if db.query(User).filter(User.email == email).first():
+            raise ValueError("El email ya está registrado")
         return True
     
     
-    def create_user(self, username:str, email:str, password:str):
-        if not self.validate_unique_user(username, email):
-            raise ValueError("Usuario o email ya existe")
-
+    def create_user(self, db: Session, username: str, email: str, password: str) -> User:
         hashed_password = hash_password(password)
-        user_id = len(fake_user_db) + 1
-        self.db[username] = {
-            "id": user_id,
-            "username": username,
-            "email": email,
-            "hashed_password": hashed_password
-        }
         
-        return UserProfileResponse(
-            id=user_id,
-            username = username,
+        # Crea la instancia del modelo SQLAlchemy
+        db_user = User(
+            username=username,
             email=email,
-            message="Usuario registrado exitosamente"
+            hashed_password=hashed_password
         )
+        
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        
+        return db_user
 
-    def login(self, username_or_email, password):
-        user = authenticate_user(username_or_email, password)
+    def login(self, db: Session, username_or_email, password):
+        user = authenticate_user(db, username_or_email, password)
         if not user:
             raise ValueError('usuario o contraseña incorrectos')
-        token = create_access_token({"sub": user["username"]})
-        return TokenResponse(access_token=token, token_type="bearer")
-
+        
+        # Guardamos el ID de usuario real en el token
+        token_data = {"sub": user.username, "id": user.id} 
+        token = create_access_token(token_data)
+        
+        return token

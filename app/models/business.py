@@ -1,5 +1,5 @@
 from app.db.session import Base
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean,DateTime, Float,Table, func
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean,DateTime, Float,Table, func, Text
 from sqlalchemy.orm import relationship
 from app.models.associations import plans_routines
 # Formato:
@@ -11,9 +11,10 @@ from app.models.associations import plans_routines
 class Plan(Base):
     __tablename__ = 'plans'
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
     price = Column(Integer, nullable=False)
-    creator_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    trainer_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     
     creator = relationship('User', back_populates='created_plans')
     routines =  relationship(
@@ -36,8 +37,7 @@ class Purchase(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     plan_id = Column(Integer, ForeignKey("plans.id"), nullable=False)
-    validation_code = Column(String, unique=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    purchase_date = Column(DateTime, default=func.now())
 
     user = relationship("User", back_populates="purchases")
     plan = relationship("Plan", back_populates="purchases")
