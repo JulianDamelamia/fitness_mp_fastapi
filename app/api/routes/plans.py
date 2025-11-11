@@ -18,10 +18,19 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/", response_class=HTMLResponse)
 def get_available_plans(
     request: Request,
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
-    plans = db.query(Plan).all()
-    #plans = db.query(Plan).offset(skip).limit(limit).all()
-    #return plans
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # subquery con los IDs de los planes que el usuario ya compró
+    purchased_plan_ids_subquery = db.query(Purchase.plan_id).filter(
+        Purchase.user_id == current_user.id
+    ).subquery()
+
+    # planes que no estén en la lista de comprados
+    plans = db.query(Plan).filter(
+        Plan.id.notin_(purchased_plan_ids_subquery)
+    ).all()
+    
     return templates.TemplateResponse("plans.html", {
         "request": request, 
         "plans": plans
@@ -79,4 +88,3 @@ def get_my_purchased_plans(
         "request": request,
         "plans": plans
     })
-

@@ -19,9 +19,9 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/register", response_class=HTMLResponse)
 def register_get(request: Request):
     return templates.TemplateResponse(
+                                    request,
                                     "register.html", 
                                         {
-                                        "request": request,
                                         "form_data": {}, 
                                         "errors": {}
                                         }
@@ -55,8 +55,9 @@ async def register_post(
 
     if errors:
         return templates.TemplateResponse(
+            request,
             "register.html",
-            {"request": request, "errors": errors,
+            {"errors": errors,
              "form_data": {"username": username, "email": email}}
         )
     
@@ -67,8 +68,7 @@ async def register_post(
 
 @router.get("/login", response_class=HTMLResponse)
 def login_get(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
-
+    return templates.TemplateResponse(request, "login.html", {})
 
 @router.post("/login")
 async def login_post(
@@ -84,8 +84,7 @@ async def login_post(
         token = user_service.login(db, username_or_email, password)
     except ValueError as e:
         # Si falla, renderiza la plantilla de login con el error
-        return templates.TemplateResponse("login.html", {
-            "request": request, 
+        return templates.TemplateResponse(request, "login.html", {
             "error": str(e)
         })
     
@@ -102,8 +101,7 @@ async def get_dashboard(
     """
     Página principal del usuario después de iniciar sesión.
     """
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "dashboard.html", {
         "username": current_user.username 
     })
 

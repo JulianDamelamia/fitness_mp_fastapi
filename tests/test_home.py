@@ -1,85 +1,56 @@
 import pytest
-from app.services.auth_service import authenticate_user
 from fastapi.testclient import TestClient
-from main import app
-from app.db.session import fake_user_db
+from app.models.user import User
 
-client = TestClient(app)
-
-@pytest.fixture(autouse=True)
-def clear_db():
-    """Se ejecuta antes y después de cada test para limpiar la DB."""
-    fake_user_db.clear()
-    yield
-    fake_user_db.clear()
-
-def test_register_exitoso(): # Nombre de función más claro
-    '''me registro exitosamente'''
-    # Se añade 'follow_redirects=False' y se espera '303'
+def test_register_user_successfully(client, db_session):
+    """
+    Prueba que un usuario puede registrarse y es redirigido a /login.
+    """
     response = client.post(
-                            "/home/register",
-                            data={
-                                "username": "julian", 
-                                "password": "notengoventanas",
-                                "confirm_password": "notengoventanas",
-                                "email": "julian@example.com"
-                                },
-                            follow_redirects=False # Importante para obtener el 303
-                        )
+        "/register",
+        data={
+            "username": "newuser",
+            "email": "new@example.com",
+            "password": "newpassword",
+            "confirm_password": "newpassword",
+        },
+        follow_redirects=False
+    )
     
-    # 1. El registro exitoso debe resultar en una redirección (303)
     assert response.status_code == 303
-    # 2. Debe redirigir a /login
     assert response.headers["location"] == "/login"
 
-    # Nota: No puedes chequear el JSON porque es una redirección, no un cuerpo de respuesta JSON.
-    # El test de que el usuario se creó debe estar implícito en el test de login, o bien
-    # tendrías que simular la dependencia de base de datos para verificarla directamente.
-    
-# El test de login debe registrar al usuario y luego loguearlo
-def test_login_con_usuario_y_email_exitoso():
-    # Paso 1: Registro (con redirección desactivada para verificar el 303)
-    register_response = client.post(
-                            "/home/register",
-                            data={
-                                "username": "julian", 
-                                "password": "notengoventanas",
-                                "confirm_password": "notengoventanas",
-                                "email": "julian@example.com"
-                                },
-                            follow_redirects=False 
-                        )
-    
-    assert register_response.status_code == 303
-    
-    # Paso 2: Login con username
-    # Se espera 303 (redirección a /dashboard)
-    response_login_user = client.post(
-                                    "/home/login",
-                                    data={
-                                        "username_or_email": "julian", 
-                                        "password": "notengoventanas"
-                                        },
-                                    follow_redirects=False # Importante
-                                    )   
-    # El login exitoso debe resultar en una redirección (303)
-    assert response_login_user.status_code == 303
-    assert response_login_user.headers["location"] == "/dashboard"
-    # Debe haber un token en la cookie 'access_token'
-    assert "access_token" in response_login_user.cookies
+    # Verificación en la base de datos
+    user = db_session.query(User).filter_by(username="newuser").first()
+    assert user is not None
+    assert user.email == "new@example.com"
 
-    # Paso 3: Login con email
-    # Se espera 303 (redirección a /dashboard)
-    response_login_email = client.post(
-                                        "/home/login",
-                                        data={
-                                             "username_or_email": "julian@example.com",
-                                            "password": "notengoventanas"
-                                        },
-                                        follow_redirects=False # Importante
-                                    )
+def test_login_successfully_redirects(client, db_session):
+    """
+    Prueba que un usuario puede registrarse, iniciar sesión y ser redirigido.
+    """
+    # Registrar usuario (como no tenemos authenticated_client, lo hacemos manual)
+    client.post(
+        "/register",
+        data={
+            "username": "testuser",
+            "email": "test@example.com",
+            "password": "password",
+            "confirm_password": "password",
+        },
+    )
 
-    assert response_login_email.status_code == 303
-    assert response_login_email.headers["location"] == "/dashboard"
-    # Debe haber un token en la cookie 'access_token'
-    assert "access_token" in response_login_email.cookies
+    # Iniciar sesión
+    response_login = client.post(
+        "/login",
+        data={"username_or_email": "testuser", "password": "password"},
+        follow_redirects=False
+    )
+    
+    assert response_login.status_code == 303
+    assert response_login.headers["location"] == "/dashboard"
+
+    response_dashboard = client.get("/dashboard")
+    
+    assert response_dashboard.status_code == 200
+    assert "¡Bienvenido, testuser!" in response_dashboard.text
