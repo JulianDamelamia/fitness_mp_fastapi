@@ -7,12 +7,14 @@ from datetime import datetime
 
 from app.api.dependencies import get_db, get_current_user, get_current_trainer
 from app.models.user import User
-from app.models.business import Plan, Purchase, PlanCreate
-from app.schemas.business import Plan as PlanSchema, Purchase as PurchaseSchema, PurchaseCreate, PlanResponse
+from app.models.business import Plan, Purchase
+from app.schemas.business import Plan as PlanSchema, Purchase as PurchaseSchema, PlanCreate
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
+
+#--- ENDPOINTS PARA CLIENTES ---
 
 # GET /planes -> Listar planes disponibles
 @router.get("/", response_class=HTMLResponse)
@@ -37,9 +39,11 @@ def get_available_plans(
     })
 
 
-# GET /planes/{id} -> Obtener detalle de un plan
 @router.get("/{id}", response_model=PlanSchema)
-def get_plan_details(id: int, db: Session = Depends(get_db)):
+def get_plan_details(
+    id: int, 
+    db: Session = Depends(get_db)
+):
     plan = db.query(Plan).filter(Plan.id == id).first()
     if not plan:
         raise HTTPException(status_code=404, detail="Plan no encontrado")
@@ -84,31 +88,96 @@ def get_my_purchased_plans(
         "plans": plans
     })
 
+# --- ENDPOINTS PARA ENTRENADORES ---
 
 #TODO: mergear con el metodo de crear plan hecho en la HU1
-@router.post("/planes", response_model=PlanResponse)
+@router.post("/", response_model=PlanSchema)
 def create_plan(
-    plan_in: PlanCreate, 
+    title: str = Form(...),
+    description: str = Form(""), # Descripción opcional
+    price: int = Form(...),
     db: Session = Depends(get_db),
-    # Solo un trainer puede crear un plan para vender
-    current_trainer: User = Depends(get_current_trainer) 
+    current_trainer: User = Depends(get_current_trainer)
 ):
     # Creamos el plan
     db_plan = Plan(
-        name=plan_in.name,
-        price=plan_in.price,
-        creator_id=current_trainer.id
+        title=title,
+        description=description,
+        price=price,
+        trainer_id=current_trainer.id
     )
     db.add(db_plan)
     db.commit()
     db.refresh(db_plan)
-    return db_plan
 
+    return RedirectResponse(url="/plans/my-creations/", status_code=303)
 
-# GET /entrenador/planes
-@router.get("/planes/me", response_model=List[PlanResponse])
-def get_my_published_plans(
+@router.get("/my-creations/", response_class=HTMLResponse)
+def get_my_created_plans(
+    request: Request,
     db: Session = Depends(get_db),
     current_trainer: User = Depends(get_current_trainer)
 ):
-    return current_trainer.created_plans
+    """
+    Muestra los planes creados por el entrenador logueado.
+    """
+    plans = db.query(Plan).filter(Plan.trainer_id == current_trainer.id).all()    
+    
+    return templates.TemplateResponse("my-creations.html", {
+        "request": request,
+        "plans": plans,
+        "username": current_trainer.username
+    })
+
+
+@router.put("/{plan_id}", response_model=PlanSchema)
+def update_my_plan(
+    plan_id: int,
+    title: str = Form(...),
+    description: str = Form(""),
+    price: int = Form(...),
+    db: Session = Depends(get_db),
+    current_trainer: User = Depends(get_current_trainer)
+):
+    """
+    Edita un plan que le pertenece.
+    """
+    db_plan = db.query(Plan).filter(Plan.id == plan_id).first()
+
+    if not db_plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    
+    # Verificación de propiedad
+    if db_plan.trainer_id != current_trainer.id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para editar este plan")
+
+    # Actualizar los datos
+    db_plan.title = title
+    db_plan.description = description
+    db_plan.price = price
+    
+    db.commit()
+    return RedirectResponse(url="/plans/my-creations/", status_code=303)
+
+@router.delete("/{plan_id}", response_model=dict)
+def delete_my_plan(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    current_trainer: User = Depends(get_current_trainer)
+):
+    """
+    Desactiva (elimina) un plan que le pertenece.
+    """
+    db_plan = db.query(Plan).filter(Plan.id == plan_id).first()
+
+    if not db_plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    
+    # Verificación de propiedad
+    if db_plan.trainer_id != current_trainer.id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar este plan")
+
+    db.delete(db_plan)
+    db.commit()
+    
+    return {"message": "Plan eliminado exitosamente"}

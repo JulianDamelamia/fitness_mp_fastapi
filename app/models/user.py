@@ -1,8 +1,15 @@
 # app/models/user.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum, Boolean
 from sqlalchemy.orm import relationship
 from app.db.session import Base
-# --- MODELOS AUTH ---
+import enum
+
+
+class UserRole(str, enum.Enum):
+    USER = "USER"
+    TRAINER = "TRAINER"
+    ADMIN = "ADMIN"
+
 class User(Base):
     __tablename__ = "users"
 
@@ -11,7 +18,8 @@ class User(Base):
     hashed_password = Column(String)
     email = Column(String, unique=True, index=True)
 
-    role = Column(String, default="user", index=True, nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
+    is_pending_trainer = Column(Boolean, default=False, nullable=False)
 
     created_plans = relationship('Plan', back_populates='creator')
     created_routines = relationship('Routine', back_populates='creator')

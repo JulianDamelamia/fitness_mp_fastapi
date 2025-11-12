@@ -2,14 +2,16 @@ from fastapi import APIRouter, Form, HTTPException, Request, status, Depends
 from pydantic import EmailStr
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
+from typing import Optional
+
 from app.services.user_services import UserService
 from app.schemas.user import TokenResponse
 from app.services.auth_service import authenticate_user
 from app.core.security import create_access_token
 from sqlalchemy.orm import Session
 from app.api.dependencies import get_db
-from app.api.dependencies import get_current_user
-from app.models.user import User
+from app.api.dependencies import get_current_user, get_current_admin, get_current_trainer
+from app.models.user import User, UserRole
 
 router = APIRouter()
 user_service = UserService()
@@ -35,8 +37,8 @@ async def register_post(
     email: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(...),
-    db: Session = Depends(get_db),
-    is_trainer: bool = Form(False)
+    trainer_request: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
 ):
     errors = {}
     form_data = {"username": username, "email": email} # Para repoblar el form si falla
@@ -54,8 +56,6 @@ async def register_post(
     except ValueError as e:
          errors["username"] = str(e)
 
-    user_role = "trainer" if is_trainer else "user"
-
     if errors:
         return templates.TemplateResponse(
             request,
@@ -64,7 +64,17 @@ async def register_post(
              "form_data": {"username": username, "email": email}}
         )
     
-    user_service.create_user(db, username, email, password, role=user_role)
+    # Si el checkbox fue marcado, is_trainer será "true"
+    pending_status = (trainer_request == "true")
+    # Llamamos al servicio actualizado
+    user_service.create_user(
+        db, 
+        username, 
+        email, 
+        password, 
+        is_pending_trainer=pending_status
+    )
+    
     return RedirectResponse(url="/login", status_code=303)
 
 
@@ -103,11 +113,36 @@ async def get_dashboard(
     """
     Página principal del usuario después de iniciar sesión.
     """
+    # Si es admin, redirigir directo al panel de admin
+    if current_user.role == UserRole.ADMIN:
+        return RedirectResponse(url="/admin/panel", status_code=303)
+    
     return templates.TemplateResponse(request, "dashboard.html", {
-        "username": current_user.username 
+        "username": current_user.username,
+        "role": current_user.role.value
     })
 
 
+@router.get("/admin/panel", response_class=HTMLResponse)
+async def get_admin_panel(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin) # Solo Admins
+):
+    """
+    Sirve la página de gestión de entrenadores.
+    """
+    # Buscamos los usuarios que están pendientes de aprobación
+    pending_trainers = db.query(User).filter(
+        User.is_pending_trainer == True,
+        User.role == UserRole.USER
+    ).all()
+    
+    return templates.TemplateResponse("admin-panel.html", {
+        "request": request,
+        "username": admin.username,
+        "pending_trainers": pending_trainers
+    })
 
 # @router.get("/me", response_model=UserProfileResponse)
 # def read_me(token: TokenResponse):

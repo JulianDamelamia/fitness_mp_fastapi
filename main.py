@@ -12,8 +12,9 @@ from app.models import user, fitness
 from app.db.session import SessionLocal, engine, Base 
 from app.api.dependencies import get_db
 from app.api.routes import users, home, plans
-from app.schemas import Exercise, ExerciseCreate # Debes importar los schemas para los endpoints
-
+from app.schemas import Exercise, ExerciseCreate
+from app.services.user_services import UserService
+from app.models.user import User, UserRole
 
 # borrar tablas, util para desarrollo
 # print("Borrando todas las tablas y recreando...")
@@ -22,6 +23,37 @@ from app.schemas import Exercise, ExerciseCreate # Debes importar los schemas pa
 # Crear las tablas en la base de datos (si no existen)
 Base.metadata.create_all(bind=engine)
 
+
+# --- PROMUEVE UN USUARIO EXISTENTE A ADMIN (SOLO SI NO HAY ADMIN) ---
+def promote_user_to_admin(username_to_promote: str):
+    db = SessionLocal()
+    try:
+        # Buscar si ya existe un admin
+        admin_user = db.query(User).filter(User.role == UserRole.ADMIN).first()
+        if admin_user:
+            print(f"El usuario '{admin_user.username}' ya es administrador. Omitiendo promoción.")
+            return
+
+        # Si no hay admin, buscar al usuario que queremos promover
+        user_to_promote = db.query(User).filter(User.username == username_to_promote).first()
+        
+        if user_to_promote:
+            # 3. Promover al usuario
+            user_to_promote.role = UserRole.ADMIN
+            db.commit()
+            print(f"¡Usuario '{username_to_promote}' promovido a ADMIN exitosamente!")
+        else:
+            # 4. No se encontró al usuario
+            print(f"Error: No se encontró al usuario '{username_to_promote}' para promoverlo.")
+            
+    except Exception as e:
+        print(f"Ocurrió un error al promover el admin: {e}")
+        db.rollback() # Revertir cambios si algo falla
+    finally:
+        db.close() # Siempre cerrar la sesión
+
+
+promote_user_to_admin("nico")
 
 # inicializar la aplicacion FastAPI
 app = FastAPI()
@@ -74,3 +106,5 @@ def read_exercise(exercise_id: int, db: Session = Depends(get_db)):
     if db_exercise is None:
         raise HTTPException(status_code=404, detail="Exercise not found")
     return db_exercise
+
+

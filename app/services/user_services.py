@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.core.security import hash_password, create_access_token
 from app.schemas import UserProfileResponse, TokenResponse
 from app.services.auth_service import authenticate_user
@@ -17,16 +17,24 @@ class UserService:
         return True
     
     
-    def create_user(self, db: Session, username: str, email: str, password: str, role: str = "user"):
+    def create_user(
+        self, 
+        db: Session, 
+        username: str, 
+        email: str, 
+        password: str, 
+        is_pending_trainer: bool = False
+    ) -> UserProfileResponse:
+        
         self.validate_unique_user(db, username, email)
         hashed_password = hash_password(password)
         
-        # Crea la instancia del modelo SQLAlchemy
         db_user = User(
             username=username,
             email=email,
             hashed_password=hashed_password,
-            role=role
+            role=UserRole.USER,
+            is_pending_trainer=is_pending_trainer
         )
         
         db.add(db_user)
