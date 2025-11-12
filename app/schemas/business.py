@@ -1,16 +1,33 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from app.schemas.fitness import RoutineBase
+from datetime import datetime
+
 
 class PlanBase(BaseModel):
-    name: str
+    title: str
+    description: Optional[str] = None
     price: int
 
 class PlanCreate(PlanBase):
-    routine_ids: Optional[List[int]] = []
+    pass
 
 class Plan(PlanBase):
     id: int
-    routines: List[RoutineBase] = []
-    class ConfigDict:
+    trainer_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class PurchaseCreate(BaseModel):
+    plan_id: int
+
+class Purchase(BaseModel):
+    id: int
+    user_id: int
+    plan_id: int
+    created_at: datetime
+    plan: Plan # Detalles del plan comprado
+
+    class Config:
         from_attributes = True

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo de Planes</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; }
+        .plan { border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em; }
+        .plan h2 { margin-top: 0; }
+        button { background-color: #28a745; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <h1>Planes Disponibles</h1>
+    <a href="/dashboard">Volver al Dashboard</a>
+    <hr>
+    
+    {% if plans %}
+        {% for plan in plans %}
+            <div class="plan">
+                <h2>{{ plan.title }}</h2>
+                <p>{{ plan.description or 'Sin descripción.' }}</p>
+                <p><strong>Precio:</strong> ${{ plan.price }}</p>
+                
+                <form action="/plans/purchase" method="post">
+                    <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                    <button type="submit">Comprar</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay planes disponibles en este momento.</p>
+    {% endif %}
+</body>
+</html>

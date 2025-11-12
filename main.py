@@ -10,6 +10,9 @@ from app.db.session import SessionLocal, engine, Base
 from app.api.dependencies import get_db, get_current_user
 from app.api.routes import home, plans, routines
 from app.schemas import ExerciseBase, ExerciseCreate
+from app.api.dependencies import get_db
+from app.api.routes import users, home, plans
+from app.schemas import ExerciseCreate # Debes importar los schemas para los endpoints
 
 
 # borrar tablas, util para desarrollo
@@ -43,12 +46,10 @@ if os.getenv("DEBUG") == "1":
     print("⚠️  Modo desarrollador activo: autenticación desactivada.")
 
 
-app.include_router(home.router)  # login, /me
-app.include_router(plans.router) 
-app.include_router(routines.router) 
 
-
-
+app.include_router(home.router, tags=["Home"]) #Saqué prefijo home
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(plans.router, prefix="/plans", tags=["Plans & Purchases"])
 
 ### --- ENDPOINTS ---
 
@@ -77,8 +78,7 @@ def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db)):
     db.refresh(db_exercise)
     return db_exercise
 
-
-@app.get("/exercises/", response_model=List[ExerciseBase])
+@app.get("/exercises/", response_model=List[Exercise])
 def read_exercises(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     exercises = db.query(ExerciseBase).offset(skip).limit(limit).all()
     return exercises

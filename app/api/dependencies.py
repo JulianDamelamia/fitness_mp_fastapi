@@ -1,12 +1,11 @@
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordBearer
+from app.db.session import SessionLocal
+from app.db.session import SessionLocal
+from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
-from jose import JWTError, jwt
-
-from app.db.session import SessionLocal, engine
+from jose import jwt, JWTError
+from app.core.config import SECRET_KEY, ALGORITHM
 from app.models.user import User
-from app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-from app.services.user_services import UserService
+from app.core.security import oauth2_scheme
 
 # Dependencia para obtener la sesión de la base de datos
 def get_db():
@@ -17,35 +16,40 @@ def get_db():
         db.close()
 
 
-def get_current_user(request: Request):
-    """Obtiene el usuario actualmente autenticado a partir del request HTTP.
-    Return:
-    - Objeto usuario correspondiente al correo extraído del token.
-    Excepciones:
-    - HTTPException(status_code=401): cuando no hay token, el token es inválido o
-        el token ha expirado.
-    Dependencias externas:
-    - jwt.decode, SECRET_KEY, ALGORITHM, JWTError, user_service.get_user_by_email.
+def get_token_from_cookie(access_token: str | None = Cookie(None)) -> str | None:
     """
-    user_service = UserService()
-    token = None
-    # Prioridad: cookie → header
-    if "access_token" in request.cookies:
-        token = request.cookies.get("access_token")
-    elif "Authorization" in request.headers:
-        auth_header = request.headers.get("Authorization")
-        if auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1]
+    Dependencia simple para extraer el token de la cookie 'access_token'
+    """
+    return access_token
 
-    if not token:
-        raise HTTPException(status_code=401, detail="Token no encontrado. Iniciá sesión nuevamente.")
+
+def get_current_user(
+    token: str = Depends(get_token_from_cookie),
+    db: Session = Depends(get_db)
+) -> User:
+    """
+    Decodifica el token JWT y retorna el objeto User de la base de datos.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No se pudieron validar las credenciales",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if token is None:
+        raise credentials_exception
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-        if not email:
-            raise HTTPException(status_code=401, detail="Token inválido o expirado.")
-
-        return user_service.get_user_by_email(email)
+        username: str = payload.get("sub")
+        user_id: int = payload.get("id")
+        if username is None or user_id is None:
+            raise credentials_exception
     except JWTError:
-        raise HTTPException(status_code=401, detail="Token inválido o expirado.")
+        raise credentials_exception
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if user is None:
+        raise credentials_exception
+        
+    return user
