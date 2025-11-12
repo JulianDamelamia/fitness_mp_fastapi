@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Planes</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; }
+        .plan { border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em; }
+        .plan h2 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <h1>Mis Planes Comprados</h1>
+    <a href="/dashboard">Volver al Dashboard</a> | <a href="/plans/">Ver más planes</a>
+    <hr>
+
+    {% if plans %}
+        {% for plan in plans %}
+            <div class="plan">
+                <h2>{{ plan.title }}</h2>
+                <p>{{ plan.description or 'Sin descripción.' }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Aún no has comprado ningún plan.</p>
+    {% endif %}
+</body>
+</html>

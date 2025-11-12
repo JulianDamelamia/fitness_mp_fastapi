@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from app.models import user, fitness 
 from app.db.session import SessionLocal, engine, Base 
 from app.api.dependencies import get_db
-from app.routes import users, home
+from app.api.routes import users, home, plans
 from app.schemas import Exercise, ExerciseCreate # Debes importar los schemas para los endpoints
 
 
@@ -29,8 +29,9 @@ templates = Jinja2Templates(directory="app/templates")
 # para desp usar CSS/js externo
 # app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-app.include_router(home.router, prefix="/home", tags=["Home"])  # login, /me
-app.include_router(users.router, prefix="/users", tags=["Users"])  # backoffice
+app.include_router(home.router, tags=["Home"]) #Saqué prefijo home
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(plans.router, prefix="/plans", tags=["Plans & Purchases"])
 
 ### --- ENDPOINTS ---
 
@@ -58,7 +59,6 @@ def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_exercise)
     return db_exercise
-
 
 @app.get("/exercises/", response_model=List[Exercise])
 def read_exercises(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

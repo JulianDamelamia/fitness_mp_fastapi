@@ -1,27 +1,35 @@
-from fastapi import APIRouter, HTTPException, Form
-from fastapi.responses import JSONResponse
-from app.schemas import UserResponse
-from app.core.security import hash_password
-from app.db.session import fake_user_db
+from fastapi import APIRouter, HTTPException, Depends, status
+from sqlalchemy.orm import Session
+from app.api.dependencies import get_db
+from app.models.user import User
+from app.schemas.user import UserResponse
 
 router = APIRouter()
 
 @router.get("/", response_model=list[str])
-def list_users():
-    return list(fake_user_db.keys())
+def list_users(db: Session = Depends(get_db)):
+    """
+    Lista los nombres de usuario de todos los usuarios en la base de datos real.
+    """
+    users = db.query(User).all()
+    return [user.username for user in users]
 
-
-@router.post("/register")
-def register_form(username: str = Form(...), password: str = Form(...)):
-    if username in fake_user_db:
-        return JSONResponse(status_code=400, content={"detail": "Usuario ya existe"})
-    hashed = hash_password(password)
-    fake_user_db[username] = {"username": username, "hashed_password": hashed}
-    return {"username": username, "message": "Usuario registrado"}
 
 @router.delete("/{username}", response_model=UserResponse)
-def delete_user(username: str):
-    if username not in fake_user_db:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    del fake_user_db[username]
+def delete_user(
+    username: str,
+    db: Session = Depends(get_db)
+    # TODO que solo un admin pueda borrar usuarios.
+):
+    """
+    Elimina un usuario de la base de datos real.
+    """
+    user_to_delete = db.query(User).filter(User.username == username).first()
+    
+    if not user_to_delete:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    
+    db.delete(user_to_delete)
+    db.commit()
+    
     return UserResponse(username=username, message="Usuario eliminado exitosamente")

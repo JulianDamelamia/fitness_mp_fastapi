@@ -10,7 +10,7 @@ from app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 # La inicialización del pwd_context se mantiene aquí porque es parte de la criptografía
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 # El esquema OAuth2 también es parte de la seguridad/autenticación
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/home/login")
 
 
 # --- FUNCIONES DE HASHING ---
