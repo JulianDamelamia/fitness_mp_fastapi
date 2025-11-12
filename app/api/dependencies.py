@@ -53,3 +53,12 @@ def get_current_user(
         raise credentials_exception
         
     return user
+
+
+def get_current_trainer(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "trainer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para realizar esta acción. Se requiere rol de 'trainer'."
+        )
+    return current_user

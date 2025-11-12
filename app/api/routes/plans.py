@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
 
-from app.api.dependencies import get_db, get_current_user
+from app.api.dependencies import get_db, get_current_user, get_current_trainer
 from app.models.user import User
-from app.models.business import Plan, Purchase
-from app.schemas.business import Plan as PlanSchema, Purchase as PurchaseSchema, PurchaseCreate
+from app.models.business import Plan, Purchase, PlanCreate
+from app.schemas.business import Plan as PlanSchema, Purchase as PurchaseSchema, PurchaseCreate, PlanResponse
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -77,14 +77,38 @@ def get_my_purchased_plans(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user) # Usuario autenticado
 ):
-    # Usar la relación 'purchased_plans' definida en modelo User
-    # O hacer una consulta explícita
     plans = current_user.purchased_plans
-    
-    # Alternativa usando la relación (si está cargada o configurada para lazy load):
-    # plans = current_user.purchased_plans # Usar esta linea si se puede
-    
+
     return templates.TemplateResponse("my-plans.html", {
         "request": request,
         "plans": plans
     })
+
+
+#TODO: mergear con el metodo de crear plan hecho en la HU1
+@router.post("/planes", response_model=PlanResponse)
+def create_plan(
+    plan_in: PlanCreate, 
+    db: Session = Depends(get_db),
+    # Solo un trainer puede crear un plan para vender
+    current_trainer: User = Depends(get_current_trainer) 
+):
+    # Creamos el plan
+    db_plan = Plan(
+        name=plan_in.name,
+        price=plan_in.price,
+        creator_id=current_trainer.id
+    )
+    db.add(db_plan)
+    db.commit()
+    db.refresh(db_plan)
+    return db_plan
+
+
+# GET /entrenador/planes
+@router.get("/planes/me", response_model=List[PlanResponse])
+def get_my_published_plans(
+    db: Session = Depends(get_db),
+    current_trainer: User = Depends(get_current_trainer)
+):
+    return current_trainer.created_plans

@@ -35,7 +35,8 @@ async def register_post(
     email: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    is_trainer: bool = Form(False)
 ):
     errors = {}
     form_data = {"username": username, "email": email} # Para repoblar el form si falla
@@ -53,6 +54,8 @@ async def register_post(
     except ValueError as e:
          errors["username"] = str(e)
 
+    user_role = "trainer" if is_trainer else "user"
+
     if errors:
         return templates.TemplateResponse(
             request,
@@ -61,8 +64,7 @@ async def register_post(
              "form_data": {"username": username, "email": email}}
         )
     
-    user_service.create_user(db, username, email, password)
-    
+    user_service.create_user(db, username, email, password, role=user_role)
     return RedirectResponse(url="/login", status_code=303)
 
 

@@ -11,6 +11,8 @@ class User(Base):
     hashed_password = Column(String)
     email = Column(String, unique=True, index=True)
 
+    role = Column(String, default="user", index=True, nullable=False)
+
     created_plans = relationship('Plan', back_populates='creator')
     created_routines = relationship('Routine', back_populates='creator')
    

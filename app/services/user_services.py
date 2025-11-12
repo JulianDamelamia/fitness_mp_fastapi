@@ -9,29 +9,36 @@ class UserService:
     def __init__(self):
         pass
 
-    def validate_unique_user(self, db: Session, username:str, email:str) -> bool:
-        if db.query(User).filter(User.username == username).first():
-            raise ValueError("El nombre de usuario ya existe")
-        if db.query(User).filter(User.email == email).first():
-            raise ValueError("El email ya está registrado")
+    def validate_unique_user(self, db: Session, username:str, email:str):
+        user_by_username = db.query(User).filter(User.username == username).first()
+        user_by_email = db.query(User).filter(User.email == email).first()
+        if user_by_username or user_by_email:
+            raise ValueError("Usuario o email ya existe")
         return True
     
     
-    def create_user(self, db: Session, username: str, email: str, password: str) -> User:
+    def create_user(self, db: Session, username: str, email: str, password: str, role: str = "user"):
+        self.validate_unique_user(db, username, email)
         hashed_password = hash_password(password)
         
         # Crea la instancia del modelo SQLAlchemy
         db_user = User(
             username=username,
             email=email,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
+            role=role
         )
         
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
         
-        return db_user
+        return UserProfileResponse(
+            id=db_user.id,
+            username = db_user.username,
+            email=db_user.email,
+            message="Usuario registrado exitosamente"
+        )
 
     def login(self, db: Session, username_or_email, password):
         user = authenticate_user(db, username_or_email, password)
