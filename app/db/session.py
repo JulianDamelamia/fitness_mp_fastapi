@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# 1. Definir la URL de la base de datos.
+# 1. Definir la URL de la base de datos y crear el engine.
 # Esto le indica a SQLAlchemy que cree un archivo llamado 'test.db'
 # en la carpeta de tu proyecto.
 
@@ -21,20 +21,18 @@ if DATABASE_URL:
     # Lógica para Render (PostgreSQL)
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+        engine = create_engine(DATABASE_URL)
 
     # Lógica para Local (MySQL)
     # (Ya debería estar correcta en tu .env, pero esto es por si acaso)
     elif DATABASE_URL.startswith("mysql://"):
         DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
+        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
     raise ValueError(
         "DATABASE_URL no está definida. Asegúrate de tener un .env local o de que esté configurada en producción."
     )
 
-
-# 2. Crear el engine de SQLAlchemy
-# El argumento 'check_same_thread' es necesario solo para SQLite.
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 # 3. Crear la clase SessionLocal
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
