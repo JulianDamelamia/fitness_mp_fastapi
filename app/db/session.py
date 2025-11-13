@@ -19,14 +19,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
 
     # Lógica para Render (PostgreSQL)
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+    if DATABASE_URL.startswith("postgresql"):
         engine = create_engine(DATABASE_URL)
 
     # Lógica para Local (MySQL)
-    # (Ya debería estar correcta en tu .env, pero esto es por si acaso)
     elif DATABASE_URL.startswith("mysql://"):
-        DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
         engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
     raise ValueError(
