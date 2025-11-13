@@ -16,7 +16,9 @@ class UserLogin(UserBase):
     password: str
 
 class UserResponse(UserBase):
-    message: str
+    id: int
+    email: str
+    message: Optional[str] = None
 
 class UserProfileResponse(UserBase):
     id: int

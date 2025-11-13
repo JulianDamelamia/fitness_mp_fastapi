@@ -11,7 +11,7 @@ from app.api.dependencies import get_db
 from app.api.dependencies import get_current_user
 from app.models.user import User
 
-router = APIRouter()
+router = APIRouter(tags=["Home"])
 user_service = UserService()
 templates = Jinja2Templates(directory="app/templates")
 
@@ -66,11 +66,11 @@ async def register_post(
     return RedirectResponse(url="/login", status_code=303)
 
 
-@router.get("/login", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def login_get(request: Request):
     return templates.TemplateResponse(request, "login.html", {})
 
-@router.post("/login")
+@router.post("/")
 async def login_post(
     request: Request,
     username_or_email: str = Form(...),

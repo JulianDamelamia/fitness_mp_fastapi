@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Sesiones{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h2 class="mb-4 text-center">Sesiones</h2>
+
+  <!-- Formulario para crear una nueva sesión -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form action="/sessions" method="post" class="row g-3">
+        <div class="col-md-8">
+          <input
+            type="text"
+            class="form-control"
+            name="name"
+            placeholder="Nombre de la sesión"
+            required
+          />
+        </div>
+        <div class="col-md-4 d-grid">
+          <button type="submit" class="btn btn-primary">Crear sesión</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lista de sesiones existentes -->
+  {% if sessions %}
+    <div class="row">
+      {% for session in sessions %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">{{ session.name }}</h5>
+              <p class="card-text text-muted">ID: {{ session.id }}</p>
+              <div class="d-flex justify-content-between">
+                <a href="/sessions/{{ session.id }}" class="btn btn-outline-primary btn-sm">Ver detalles</a>
+                <a href="/sessions/{{ session.id }}/edit" class="btn btn-outline-secondary btn-sm">Editar</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted text-center">No hay sesiones registradas todavía.</p>
+  {% endif %}
+</div>
+{% endblock %}

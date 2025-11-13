@@ -29,5 +29,11 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+# def verify_access_token(token: str):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         return payload
+#     except JWTError:
+#         return None
 # Se ELIMINA la función 'authenticate_user' y cualquier referencia a 'fake_user_db'
 # porque esa lógica le corresponde a la capa de SERVICIOS o REPOSITORIOS.
