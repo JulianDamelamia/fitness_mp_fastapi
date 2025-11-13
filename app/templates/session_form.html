@@ -1,118 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Editar' if session else 'Nueva' }} Sesión{% endblock %}
-
+{% block title %}Nueva Sesión{% endblock %}
 {% block content %}
-<div class="container mt-4">
-  <h2 class="mb-4 text-center">
-    {{ 'Editar' if session else 'Nueva' }} Sesión
-  </h2>
-
-  <!-- Formulario principal -->
-  <form
-    method="post"
-    action="{{ action_url }}"
-    class="card shadow-sm p-4 mb-4"
-  >
-    <div class="mb-3">
-      <label for="name" class="form-label">Nombre de la sesión</label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        class="form-control"
-        value="{{ session.name if session else '' }}"
-        required
-      />
-    </div>
-
-    <div class="d-flex justify-content-end mt-4">
-      <a href="/sessions" class="btn btn-outline-secondary me-2">Cancelar</a>
-      <button type="submit" class="btn btn-primary">Guardar sesión</button>
-    </div>
-  </form>
-
-  {% if session %}
-  <!-- Sección para ejercicios -->
-  <div class="card shadow-sm p-4">
-    <h5>Ejercicios</h5>
-
-    <ul id="exercise-list" class="list-group mb-3">
-      {% if session.exercises %}
-        {% for ex in session.exercises %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ ex.name }}
-          </li>
-        {% endfor %}
-      {% else %}
-        <li id="empty-msg" class="list-group-item text-muted">
-          No hay ejercicios todavía.
-        </li>
-      {% endif %}
-    </ul>
-
-    <!-- Campo + botón para agregar ejercicio -->
-    <div class="input-group">
-      <input
-        type="text"
-        id="exercise-name"
-        class="form-control"
-        placeholder="Nombre del ejercicio"
-      />
-      <button type="button" class="btn btn-outline-success" id="add-exercise-btn">
-        Agregar
-      </button>
-    </div>
-  </div>
-  {% endif %}
-</div>
-{% endblock %}
-
-{% block scripts %}
-{% if session %}
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const addBtn = document.getElementById("add-exercise-btn");
-  const input = document.getElementById("exercise-name");
-  const list = document.getElementById("exercise-list");
-  const emptyMsg = document.getElementById("empty-msg");
-
-  addBtn.addEventListener("click", async () => {
-    const name = input.value.trim();
-    if (!name) return alert("El nombre del ejercicio no puede estar vacío.");
-
-    try {
-      const response = await fetch(`/sessions/{{ session.id }}/add_exercise`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name })
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        alert(data.detail || "Error al agregar ejercicio.");
-        return;
-      }
-
-      const exercise = await response.json();
-
-      // Quitar mensaje "vacío"
-      if (emptyMsg) emptyMsg.remove();
-
-      // Agregar nuevo ejercicio al listado
-      const li = document.createElement("li");
-      li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
-      li.textContent = exercise.name;
-      list.appendChild(li);
-
-      input.value = "";
-    } catch (err) {
-      console.error(err);
-      alert("Error de conexión al servidor.");
-    }
-  });
-});
-</script>
-{% endif %}
+<h1>Crear Sesión</h1>
+<form method="post" action="/sessions/new">
+    <label>Nombre de la sesión:
+        <input type="text" name="name" required>
+    </label>
+    <button type="submit">Guardar</button>
+</form>
+<a href="/sessions">Cancelar</a>
 {% endblock %}

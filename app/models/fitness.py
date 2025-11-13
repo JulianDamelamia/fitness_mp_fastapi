@@ -48,6 +48,9 @@ class Session(Base):
     id = Column(Integer, primary_key=True, index = True)
     session_name = Column(String, nullable=False)
 
+    creator_id = Column(Integer, ForeignKey('users.id'))
+    creator = relationship("User", back_populates='created_sessions')
+
     routines = relationship(
         'Routine',
         secondary=routines_sessions,

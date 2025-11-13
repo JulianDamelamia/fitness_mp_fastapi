@@ -9,6 +9,7 @@ from app.api.dependencies import get_db, get_current_user, get_current_trainer
 from app.models.user import User
 from app.models.business import Plan, Purchase
 from app.schemas.business import Plan as PlanSchema, Purchase as PurchaseSchema, PlanCreate
+from app.models.fitness import Routine
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -96,6 +97,7 @@ def create_plan(
     title: str = Form(...),
     description: str = Form(""), # Descripción opcional
     price: int = Form(...),
+    routine_ids: List[int] = Form([]),
     db: Session = Depends(get_db),
     current_trainer: User = Depends(get_current_trainer)
 ):
@@ -106,11 +108,20 @@ def create_plan(
         price=price,
         trainer_id=current_trainer.id
     )
+
+    if routine_ids:
+        selected_routines = db.query(Routine).filter(
+            Routine.id.in_(routine_ids),
+            Routine.creator_id == current_trainer.id # Seguridad: solo puede agregar sus propias rutinas
+        ).all()
+        db_plan.routines.extend(selected_routines)
+
     db.add(db_plan)
     db.commit()
     db.refresh(db_plan)
 
     return RedirectResponse(url="/plans/my-creations/", status_code=303)
+
 
 @router.get("/my-creations/", response_class=HTMLResponse)
 def get_my_created_plans(
@@ -123,10 +134,13 @@ def get_my_created_plans(
     """
     plans = db.query(Plan).filter(Plan.trainer_id == current_trainer.id).all()    
     
+    my_routines = db.query(Routine).filter(Routine.creator_id == current_trainer.id).all()
+
     return templates.TemplateResponse("my-creations.html", {
         "request": request,
         "plans": plans,
-        "username": current_trainer.username
+        "username": current_trainer.username,
+        "routines": my_routines
     })
 
 

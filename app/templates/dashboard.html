@@ -8,6 +8,14 @@
     <h1>¡Bienvenido, {{ username }}!</h1>
     
     <p>¿Qué quieres hacer?</p>
+
+    <h2>Gestión de Entrenamiento</h2>
+    <ul>
+        <li><a href="/routines">Gestionar mis Rutinas</a></li>
+        <li><a href="/sessions">Gestionar mis Sesiones (bloques)</a></li>
+    </ul>
+    <hr>
+    <h2>Planes y Compras</h2>
     
     {% if role == "TRAINER" %}
         <ul>
