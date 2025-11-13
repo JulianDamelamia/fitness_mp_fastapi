@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.user import User, UserRole
 from app.core.security import hash_password, create_access_token
-from app.schemas import UserProfileResponse, TokenResponse, UserResponse
+from app.schemas.user import UserProfileResponse, TokenResponse
 from app.services.auth_service import authenticate_user
 
 
@@ -24,9 +24,8 @@ class UserService:
         email: str, 
         password: str, 
         is_pending_trainer: bool = False
-    ) -> UserProfileResponse:
+    ) -> User:
         
-        self.validate_unique_user(db, username, email)
         hashed_password = hash_password(password)
         
         db_user = User(
@@ -41,27 +40,14 @@ class UserService:
         db.commit()
         db.refresh(db_user)
         
-        return UserProfileResponse(
-            id=db_user.id,
-            username = db_user.username,
-            email=db_user.email,
-            message="Usuario registrado exitosamente"
-        )
+        return db_user
 
     def login(self, db: Session, username_or_email, password):
         user = authenticate_user(db, username_or_email, password)
         if not user:
             raise ValueError('usuario o contraseña incorrectos')
-        token = create_access_token({"sub": user["username"]})
-        return TokenResponse(access_token=token, token_type="bearer")
-
-    def get_user_by_email(self, email: str):
-        for user in self.db.values():
-            if user["email"] == email:
-                return UserResponse(
-                    id=user["id"],
-                    username=user["username"],
-                    email=user["email"],
-                    message="Usuario encontrado exitosamente"
-                )
-        return None
+        
+        token_data = {"sub": user.username, "id": user.id} 
+        token = create_access_token(token_data)
+        
+        return token
