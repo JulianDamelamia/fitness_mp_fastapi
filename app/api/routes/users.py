@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
-from app.api.dependencies import get_db
-from app.models.user import User
+from typing import List
+
+from app.api.dependencies import get_db, get_current_user, get_current_admin
+from app.models.user import User, UserRole
 from app.schemas.user import UserResponse
 
 router = APIRouter()
@@ -33,3 +35,66 @@ def delete_user(
     db.commit()
     
     return UserResponse(username=username, message="Usuario eliminado exitosamente")
+
+
+@router.post("/request-trainer", response_model=UserResponse)
+def request_trainer_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) # <-- Usuario logueado
+):
+    """
+    El usuario logueado solicita convertirse en entrenador.
+    """
+    if current_user.role == UserRole.TRAINER:
+        raise HTTPException(status_code=400, detail="Ya eres un entrenador")
+    if current_user.is_pending_trainer:
+        raise HTTPException(status_code=400, detail="Ya tienes una solicitud pendiente")
+
+    current_user.is_pending_trainer = True
+    db.commit()
+    
+    return UserResponse(
+        username=current_user.username, 
+        message="Solicitud para ser entrenador enviada. Pendiente de aprobación."
+    )
+
+
+@router.get("/admin/pending-trainers", response_model=List[str])
+def get_pending_trainers(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    """
+    (Admin) Lista los usuarios pendientes de aprobación como entrenadores.
+    """
+    pending_users = db.query(User).filter(
+        User.is_pending_trainer == True
+    ).all()
+    
+    return [user.username for user in pending_users]
+
+
+@router.post("/admin/approve-trainer/{username}", response_model=UserResponse)
+def approve_trainer(
+    username: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    """
+    (Admin) Aprueba a un usuario como entrenador.
+    """
+    user_to_approve = db.query(User).filter(User.username == username).first()
+    
+    if not user_to_approve:
+        raise HTTPException(status_code=4.04, detail="Usuario no encontrado")
+    if not user_to_approve.is_pending_trainer:
+        raise HTTPException(status_code=400, detail="El usuario no tiene una solicitud pendiente")
+
+    user_to_approve.role = UserRole.TRAINER
+    user_to_approve.is_pending_trainer = False
+    db.commit()
+    
+    return UserResponse(
+        username=username, 
+        message="Usuario aprobado como entrenador exitosamente"
+    )

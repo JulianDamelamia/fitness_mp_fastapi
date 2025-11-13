@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administrador</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; }
+        .container { max-width: 800px; margin: auto; }
+        .pending-list { list-style: none; padding: 0; }
+        .pending-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid #ccc; padding: 1em; margin-bottom: 0.5em; border-radius: 8px; }
+        .pending-item span { font-weight: bold; }
+        button { background-color: #28a745; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Administrador</h1>
+        <p>Bienvenido, <strong>{{ username }}</strong>.</p>
+        <hr>
+
+        <h2>Solicitudes Pendientes de Entrenador</h2>
+        
+        {% if pending_trainers %}
+            <ul class="pending-list">
+                {% for user in pending_trainers %}
+                    <li class="pending-item">
+                        <span>{{ user.username }} ({{ user.email }})</span>
+                        
+                        <form action="/users/admin/approve-trainer/{{ user.username }}" method="post">
+                            <button type="submit">Aprobar</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hay solicitudes pendientes de aprobación.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

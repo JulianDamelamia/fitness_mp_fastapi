@@ -14,3 +14,10 @@ plans_routines = Table(
     Column("plan_id", ForeignKey("plans.id"), primary_key=True),
     Column("routine_id", ForeignKey("routines.id"), primary_key=True)
 )
+
+user_follows = Table(
+    "user_follows",
+    Base.metadata,
+    Column("follower_id", ForeignKey("users.id"), primary_key=True),
+    Column("followed_id", ForeignKey("users.id"), primary_key=True)
+)

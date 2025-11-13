@@ -8,10 +8,22 @@
     <h1>¡Bienvenido, {{ username }}!</h1>
     
     <p>¿Qué quieres hacer?</p>
-    <ul>
-        <li><a href="/plans/">Ver catálogo de planes</a></li>
-        <li><a href="/plans/my-plans/">Ver mis planes comprados</a></li>
-    </ul>
     
-    </body>
+    {% if role == "TRAINER" %}
+        <ul>
+            <li><a href="/plans/my-creations/">Gestionar mis planes creados</a></li>
+            <hr>
+            <li><a href="/plans/">Ver catálogo de otros planes</a></li>
+            <li><a href="/plans/my-plans/">Ver mis planes comprados</a></li>
+        </ul>
+        
+    {% elif role == "USER" %}
+        <ul>
+            <li><a href="/plans/">Ver catálogo de planes</a></li>
+            <li><a href="/plans/my-plans/">Ver mis planes comprados</a></li>
+        </ul>
+        
+    {% endif %}
+    
+</body>
 </html>
