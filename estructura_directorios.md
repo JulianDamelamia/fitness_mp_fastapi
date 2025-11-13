@@ -46,4 +46,8 @@ fitness_mp_fastapi/
 ├── tests/
 │   └── ...
 ├── main.py                              # Punto de entrada
-└── .gitignore
+├── .dockerignore                        # Archivos a ignorar en Docker
+├── Dockerfile                           # Configuración de la imagen Docker
+├── requirements.txt                    # Dependencias del proyecto
+└── .gitignore                          # Archivos a ignorar en Git
+
