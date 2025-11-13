@@ -14,8 +14,7 @@
     <label>
       <input type="checkbox" name="session_ids" value="{{ s.id }}"
         {% if s.id in form_data.get("session_ids", []) %}checked{% endif %}>
-      {{ s.name }}
-    </label><br>
+      {{ s.session_name }}  </label><br>
   {% else %}
     <p>No hay sesiones disponibles. <a href="/sessions/new">Crear una sesión</a></p>
   {% endfor %}

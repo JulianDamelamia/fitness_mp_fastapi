@@ -27,6 +27,22 @@ class ExerciseBuilder:
             target_weight=getattr(ex_data, "target_weight", 0),
             session=session,
         )
+    
+    @staticmethod
+    def update_exercise(db, ex_data):
+        """Actualiza un ejercicio existente según los datos recibidos."""
+        exercise = db.query(Exercise).filter(Exercise.id == ex_data.id).first()
+        if not exercise:
+            raise EntityNotFoundError(f"Exercise ID {ex_data.id} no encontrado")
+        
+        if getattr(ex_data, "exercise_name", None):
+            exercise.exercise_name = ex_data.exercise_name
+        if getattr(ex_data, "target_sets", None) is not None:
+            exercise.target_sets = ex_data.target_sets
+        if getattr(ex_data, "target_reps", None) is not None:
+            exercise.target_reps = ex_data.target_reps
+            
+        return exercise
 
 
 class SessionBuilder:

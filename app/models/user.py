@@ -27,6 +27,8 @@ class User(Base):
     created_plans = relationship('Plan', back_populates='creator')
     created_routines = relationship('Routine', back_populates='creator')
    
+    created_sessions = relationship('Session', back_populates='creator')
+
     purchases = relationship("Purchase", back_populates="user")
     purchased_plans = relationship(
         "Plan",

@@ -1,24 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Mis Creaciones</title>
-    <style>
-        body { font-family: sans-serif; padding: 2em; }
-        .plan { border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em; }
-        .plan h2 { margin-top: 0; }
-        .form-crear { background-color: #f4f4f4; padding: 1em; border-radius: 8px; margin-bottom: 2em; }
-        input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
-        .btn-delete { background-color: #dc3545; }
-    </style>
-</head>
-<body>
-    <h1>Panel de Entrenador (¡Hola, {{ username }}!)</h1>
-    <a href="/dashboard">Volver al Dashboard</a>
-    <hr>
-
-    <h2>Crear Nuevo Plan</h2>
+<h2>Crear Nuevo Plan</h2>
     <div class="form-crear">
         <form action="/plans/" method="post">
             <label for="title">Título:</label>
@@ -30,28 +10,17 @@
             <label for="price">Precio (ARS):</label>
             <input type="number" name="price" required>
             
+            <label>Asociar Rutinas (opcional):</label>
+            <div style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; max-height: 150px; overflow-y: auto;">
+                {% for routine in routines %}
+                    <label>
+                        <input type="checkbox" name="routine_ids" value="{{ routine.id }}">
+                        {{ routine.name }}
+                    </label><br>
+                {% else %}
+                    <small>No tenés rutinas creadas. <a href="/routines">Creá una rutina</a> primero.</small>
+                {% endfor %}
+            </div>
             <button type="submit">Publicar Plan</button>
         </form>
     </div>
-
-    <hr>
-
-    <h2>Mis Planes Publicados</h2>
-    {% if plans %}
-        {% for plan in plans %}
-            <div class="plan">
-                <h3>{{ plan.title }} (${{ plan.price }})</h3>
-                <p>{{ plan.description or 'Sin descripción.' }}</p>
-                
-                <form action="/plans/{{ plan.id }}/delete" method="post" style="display:inline;">
-                    <button type="submit" class="btn-delete">Eliminar</button>
-                </form>
-                
-                <button disabled>Editar (Próximamente)</button>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>Aún no has creado ningún plan.</p>
-    {% endif %}
-</body>
-</html>
