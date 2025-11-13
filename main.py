@@ -8,11 +8,9 @@ import os
 
 from app.db.session import SessionLocal, engine, Base 
 from app.api.dependencies import get_db, get_current_user
-from app.api.routes import home, plans, routines
-from app.schemas import ExerciseBase, ExerciseCreate
-from app.api.dependencies import get_db
-from app.api.routes import users, home, plans
-from app.schemas import ExerciseCreate # Debes importar los schemas para los endpoints
+from app.api.routes import home, plans, users, routines
+from app.schemas.fitness import ExerciseBase, ExerciseCreate, ExerciseResponse
+
 
 
 # borrar tablas, util para desarrollo
@@ -49,6 +47,7 @@ if os.getenv("DEBUG") == "1":
 
 app.include_router(home.router, tags=["Home"]) #Saqué prefijo home
 app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(routines.router, prefix="/routines", tags=["Routines"])
 app.include_router(plans.router, prefix="/plans", tags=["Plans & Purchases"])
 
 ### --- ENDPOINTS ---
@@ -78,13 +77,13 @@ def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db)):
     db.refresh(db_exercise)
     return db_exercise
 
-@app.get("/exercises/", response_model=List[Exercise])
+@app.get("/exercises/", response_model=List[ExerciseBase])
 def read_exercises(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     exercises = db.query(ExerciseBase).offset(skip).limit(limit).all()
     return exercises
 
 
-@app.get("/exercises/{exercise_id}", response_model=ExerciseBase)
+@app.get("/exercises/{exercise_id}", response_model=ExerciseResponse)
 def read_exercise(exercise_id: int, db: Session = Depends(get_db)):
     db_exercise = (
         db.query(ExerciseBase).filter(ExerciseBase.id == exercise_id).first()

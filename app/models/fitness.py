@@ -60,6 +60,7 @@ class Session(Base):
 
 
 # Ejercicio como elemento abstracto que compone las sesiones
+# PROBLEMA: PRESS DE PECHO 4X8 70KG ES DISTINTO A PP 4X8 71KG, FALTA UNA DIMENSION
 class Exercise(Base):
     """attrs:
     id: int not_null

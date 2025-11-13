@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.core.security import hash_password, create_access_token
-from app.schemas import UserProfileResponse, TokenResponse
+from app.schemas import UserProfileResponse, TokenResponse, UserResponse
 from app.services.auth_service import authenticate_user
 
 
@@ -37,7 +37,6 @@ class UserService:
         user = authenticate_user(db, username_or_email, password)
         if not user:
             raise ValueError('usuario o contraseña incorrectos')
-<<<<<<< HEAD
         token = create_access_token({"sub": user["username"]})
         return TokenResponse(access_token=token, token_type="bearer")
 
@@ -51,11 +50,3 @@ class UserService:
                     message="Usuario encontrado exitosamente"
                 )
         return None
-=======
-        
-        # Guardamos el ID de usuario real en el token
-        token_data = {"sub": user.username, "id": user.id} 
-        token = create_access_token(token_data)
-        
-        return token
->>>>>>> main

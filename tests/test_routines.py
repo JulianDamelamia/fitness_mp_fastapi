@@ -1,151 +1,188 @@
 import pytest
-import os
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from app.core.security import create_access_token
+from sqlalchemy.orm import sessionmaker
 
-from main import app
-from app.db.session import Base
+from main import app  
+from app.db.session import Base  
+from app.models.fitness import Routine, Session, Exercise
 from app.api.dependencies import get_db
+from app.services.routine_service import RoutineService
+# ------------------------------------------------------------
+# Configuración del entorno de prueba
+# ------------------------------------------------------------
 
-client = TestClient(app)
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test_routines.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@pytest.fixture(scope="function")
-def db_session():
+@pytest.fixture(scope="function", autouse=True)
+def reset_db():
+    """Borra y recrea todas las tablas antes de cada test."""
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
+    yield
+
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture()
+def db():
+    """Devuelve una sesión de base de datos aislada."""
+    session = TestingSessionLocal()
     try:
+        yield session
+    finally:
+        session.close()
+
+def override_get_db():
+    """Usa una base de datos temporal en cada test"""
+    try:
+        db = TestingSessionLocal()
         yield db
     finally:
+        db.rollback()
         db.close()
-        Base.metadata.drop_all(bind=engine)
 
-@pytest.fixture(scope="function")
-def client(db_session):
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            db_session.close()
 
-    app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
+app.dependency_overrides[get_db] = override_get_db
 
-@pytest.fixture(scope="module")
-def test_client():
-    """Devuelve un cliente de pruebas FastAPI."""
-    return TestClient(app)
+client = TestClient(app)
+
+# ------------------------------------------------------------
+# Fixtures
+# ------------------------------------------------------------
 
 @pytest.fixture
-def create_user(test_client):
-    def _create_user(username: str, email: str, password: str = "password123"):
-        response = test_client.post(
-            "/register",
-            data={
-                "username": username,
-                "email": email,
-                "password": password,
-                "confirm_password": password,
-            },
-            follow_redirects=False
-        )
-        # Debe devolver 303 (redirect) si fue exitoso
-        assert response.status_code in (200, 303), response.text
-        return response
-    return _create_user
-
-
-@pytest.fixture
-def login_user(test_client):
-    def _login_user(username_or_email: str, password: str = "password123"):
-        response = test_client.post(
-            "/",
-            data={"username_or_email": username_or_email, "password": password},
-            follow_redirects=False
-        )
-        assert response.status_code in (200, 303), response.text
-        token = response.cookies.get("access_token")
-        assert token, f"No se recibió token para {username_or_email}"
-        return {"Authorization": f"Bearer {token}"}
-    return _login_user
-
-
-@pytest.fixture
-def auth_headers(test_client):
-    def _auth_headers(username: str, email: str, password: str = "password123"):
-        # Crear usuario
-        response = test_client.post(
-            "/register",
-            data={
-                "username": username,
-                "email": email,
-                "password": password,
-                "confirm_password": password,
+def seed_data():
+    data_1 = {
+        "name": "Rutina A - Push",
+        "sessions": [
+            {
+                "session_name": "Día 1 - Empuje",
+                "exercises": [
+                    {"exercise_name": "Press banca", "target_sets": 4, "target_reps": 8},
+                    {"exercise_name": "Press militar", "target_sets": 3, "target_reps": 10},
+                ],
             }
-        )
-        assert response.status_code in (200, 201), response.text
+        ],
+    }
 
-        # Crear token válido (mismo SECRET_KEY y estructura)
-        token = create_access_token({"sub": email})
-        return {"Authorization": f"Bearer {token}"}
-    return _auth_headers
+    data_2 = {
+        "name": "Rutina B - Pull",
+        "sessions": [
+            {
+                "session_name": "Día 2 - Espalda",
+                "exercises": [
+                    {"exercise_name": "Dominadas", "target_sets": 4, "target_reps": 6},
+                    {"exercise_name": "Remo con barra", "target_sets": 3, "target_reps": 10},
+                ],
+            }
+        ],
+    }
+    yield (data_1, data_2)
 
 
-@pytest.fixture
-def base_exercises():
-    """Devuelve una lista base de ejercicios para usar en las rutinas.
-    """
-    return [
-        {"exercise_name": "Press de pecho", "target_sets": 4, "target_reps": 10, "weight": 60},
-        {"exercise_name": "Press militar", "target_sets": 3, "target_reps": 8, "weight": 40},
-        {"exercise_name": "Remo con barra", "target_sets": 4, "target_reps": 10, "weight": 50},
-        {"exercise_name": "Dominadas", "target_sets": 3, "target_reps": 8, "weight": 0},
-        {"exercise_name": "Sentadilla", "target_sets": 4, "target_reps": 10, "weight": 80},
-        {"exercise_name": "Peso muerto", "target_sets": 3, "target_reps": 8, "weight": 100}
-    ]
+# ------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------
 
-@pytest.fixture
-def create_routine(test_client, auth_headers, base_exercises):
-    def _create_routine(username="user_a", email="a@example.com", routine_name="Rutina fuerza"):
-        headers = auth_headers(username, email)
-        payload = {
-            "name": routine_name,
-            "sessions": [
-                {
-                    "session_name": "Día 1 - Tren inferior",
-                    "exercises": [b_e for b_e in base_exercises[:4]]
-                },
-                {
-                    "session_name": "Día 2 - Tren superior",
-                    "exercises": [b_e for b_e in base_exercises[4:]]
-                }
-            ]
-        }
-        response = test_client.post("/routines/", json=payload, headers=headers)
-        assert response.status_code == 200, response.text
-        data = response.json()
-        return data, headers
-    return _create_routine
+def test_list_routines_empty():
+    response = client.get("/routines/")
+    assert response.status_code == 200
+    assert response.json() == []
 
-def test_create_routine_with_auth(create_routine):
-    data, _ = create_routine()
-    assert data["name"] == "Rutina fuerza"
-    assert len(data["sessions"]) == 2
 
-def test_edit_session_add_exercise(test_client, create_routine):
-    routine, headers = create_routine("edit_user", "edit@example.com")
-    import pdb; pdb.set_trace()
-    session_id = routine["sessions"][0]["id"]
-    print(test_client.app.routes)
-    new_exercise = {"name": "Curl de bíceps", "sets": 3, "reps": 12, "weight": 15}
-    update_data = {"exercises": [new_exercise]}
+def test_create_routine_with_new_session(seed_data):
+    payload = seed_data[0]
+    response = client.post("/routines/", json=payload)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Rutina A - Push"
+    assert len(data["sessions"]) == 1
+    assert data["sessions"][0]["session_name"] == "Día 1 - Empuje"
 
-    response = test_client.put(f"/sessions/{session_id}", json=update_data, headers=headers)
-    assert response.status_code == 200, response.text
 
-    updated = response.json()
-    assert any(ex["name"] == "Curl de bíceps" for ex in updated["exercises"])
+def test_get_routine_by_id(seed_data):
+    created = client.post("/routines/", json=seed_data[0])
+    print(created.text)
+    routine_id = created.json()["id"]
+    response = client.get(f"/routines/{routine_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == routine_id
+    assert data["name"] == "Rutina A - Push"
+
+
+def test_update_routine_name_only(seed_data):
+    payload = seed_data[1]
+    routine = client.post("/routines/", json=payload).json()
+    update_payload = {"name": "Rutina actualizada", "sessions": []}
+    response = client.patch(f"/routines/{routine['id']}", json=update_payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Rutina actualizada"
+
+
+def test_create_routine_and_add_session(seed_data):
+    """Crear rutina y luego agregar una nueva sesión sin sobrescribir"""
+    # Crear rutina base
+    base_payload = seed_data[0]
+    response = client.post("/routines/", json=base_payload)
+    assert response.status_code == 200
+    routine = response.json()
+    assert len(routine["sessions"]) == 1
+
+    # Agregar una nueva sesión
+    update_payload = seed_data[1]
+    patch = client.patch(f"/routines/{routine['id']}", json=update_payload)
+    assert patch.status_code == 200
+    updated = patch.json()
+
+    assert updated["name"] == "Rutina B - Pull"  # se actualiza el nombre
+    assert len(updated["sessions"]) == 2  # la sesión nueva se agrega
+
+
+def test_multiple_updates_are_additive(seed_data):
+    """Aplicar dos actualizaciones seguidas y conservar todas las sesiones"""
+    response = client.post("/routines/", json=seed_data[0])
+    assert response.status_code == 200
+    routine = response.json()
+
+    for update in seed_data[1:]:
+        patch = client.patch(f"/routines/{routine['id']}", json=update)
+        assert patch.status_code == 200
+        routine = patch.json()
+
+    assert len(routine["sessions"]) == 2
+    session_names = [s["session_name"] for s in routine["sessions"]]
+    assert "Día 1 - Empuje" in session_names
+    assert "Día 2 - Espalda" in session_names
+
+def test_delete_routine():
+    payload ={
+        "name": "Rutina a borrar",
+        "sessions": [
+            {
+                "session_name": "Día 2 - Pierna",
+                "exercises": [
+                    {"exercise_name": "Sentadilla", "target_sets": 5, "target_reps": 5}
+                ],
+            }
+        ],
+    }
+    routine = client.post("/routines/", json=payload).json()
+    rid = routine["id"]
+
+    response = client.delete(f"/routines/{rid}")
+    assert response.status_code in (200, 303, 307)
+
+    response = client.get(f"/routines/{rid}")
+    assert response.status_code == 404
+
+
+def test_create_routine_with_invalid_payload():
+    payload = {"nombre": "No válido"}  # mal key
+    response = client.post("/routines/", json=payload)
+    assert response.status_code == 422  # error de validación de FastAPI

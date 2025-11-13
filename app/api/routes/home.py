@@ -66,7 +66,7 @@ async def register_post(
     return RedirectResponse(url="/login", status_code=303)
 
 
-@router.get("/login", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def login_get(request: Request):
     return templates.TemplateResponse(request, "login.html", {})
 

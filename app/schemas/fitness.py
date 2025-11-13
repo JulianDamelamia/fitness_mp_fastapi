@@ -3,9 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 ## --- SCHEMAS ejercicio ---
-# Schema base con campos comunes para ejercicios
 class ExerciseBase(BaseModel):
-    id: Optional[int] = None
     exercise_name: str
     target_sets: int
     target_reps: int
@@ -24,8 +22,7 @@ class ExerciseResponse(ExerciseBase):
 
 ## --- SCHEMAS sesiones ---
 class SessionBase(BaseModel):
-    id: Optional[int] = None   
-    session_name: Optional[str] = None
+    session_name: str = None
 
 class SessionCreate(SessionBase):
     exercises: List[ExerciseCreate] = []

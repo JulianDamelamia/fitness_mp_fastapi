@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models import Base, SessionLog
 from app.schemas.session import CreateSessionSchema, ExerciseInSession
-from app.factories.session_factory import SessionFactory
+from app.builders.session_factory import SessionFactory
 from app.models.fitness import Exercise, Session as fitnessSession
 from app.models.tracker import SessionLog, ExerciseLog
 
