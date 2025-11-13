@@ -186,3 +186,38 @@ def test_create_routine_with_invalid_payload():
     payload = {"nombre": "No válido"}  # mal key
     response = client.post("/routines/", json=payload)
     assert response.status_code == 422  # error de validación de FastAPI
+
+@pytest.fixture
+def routine_with_sessions(seed_data):
+    response = client.post("/routines/", json=seed_data[0])
+    assert response.status_code == 200
+    routine = response.json()
+    for update in seed_data[1:]:
+        patch = client.patch(f"/routines/{routine['id']}", json=update)
+        assert patch.status_code == 200
+        routine = patch.json()
+    return routine
+
+def test_delete_single_session(routine_with_sessions):
+    """Elimina una sesión existente de una rutina y verifica el resultado."""
+    routine_id = routine_with_sessions["id"]
+    old_routine = client.request(
+                "GET",
+                f"/routines/{routine_id}").json()
+    
+    session_to_delete = routine_with_sessions["sessions"][0]["id"]
+    delete_payload = {"session_ids": [session_to_delete]}
+    response = client.request(
+        "DELETE",
+        f"/routines/{routine_id}/sessions",
+        json=delete_payload,
+    )
+
+    assert response.status_code == 200
+    updated_routine = client.request(
+        "GET",
+        f"/routines/{routine_id}").json()
+
+    remaining_ids = [s["id"] for s in updated_routine["sessions"]]
+    assert session_to_delete not in remaining_ids
+    assert len(updated_routine["sessions"]) == len(old_routine['sessions'])-1

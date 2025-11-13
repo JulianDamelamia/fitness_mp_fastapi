@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session as db_Session
 from app.api.dependencies import get_db, get_current_user
 from app.services.routine_service import RoutineService
 from app.errors.errors import EntityNotFoundError,ValidationError 
-from app.models.fitness import Routine, Session,Exercise
+from app.models.fitness import Routine
 from app.models.user import User
-from app.schemas.fitness import RoutineCreate, RoutineResponse
+from app.schemas.fitness import RoutineCreate, RoutineResponse,SessionDeleteRequest
 import pdb
 import traceback
 
@@ -103,6 +103,25 @@ def update_routine(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error inesperado: {e}")
+
+
+@router.delete("/{routine_id}/sessions")
+def delete_routine_sessions(
+    routine_id: int,
+    request: SessionDeleteRequest,
+    db=Depends(get_db),
+    current_user: User = Depends(lambda: User(id=1, username="testuser"))
+):
+    """Elimina una o más sesiones específicas de una rutina."""
+    routine = db.query(Routine).filter_by(id=routine_id, creator_id=current_user.id).first()
+    if not routine:
+        raise EntityNotFoundError(f"Rutina con ID {routine_id} no encontrada")
+
+    deleted_ids = RoutineService.delete_sessions(routine, request.session_ids, db)
+    db.commit()
+
+    return {"detail": f"Sesiones eliminadas correctamente", "deleted_ids": deleted_ids}
+
 
 @router.get("/html", response_class=HTMLResponse)
 def list_routines(request:Request, db: db_Session = Depends(get_db)):

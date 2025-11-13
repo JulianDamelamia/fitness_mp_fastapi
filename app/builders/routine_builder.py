@@ -28,20 +28,6 @@ class ExerciseBuilder:
             session=session,
         )
 
-    @staticmethod
-    def update_exercise(db, ex_data):
-        """Actualiza un ejercicio existente según los datos recibidos."""
-        exercise = db.query(Exercise).filter(Exercise.id == ex_data.id).first()
-        if not exercise:
-            raise EntityNotFoundError(f"Exercise ID {ex_data.id} no encontrado")
-        if getattr(ex_data, "exercise_name", None):
-            exercise.exercise_name = ex_data.exercise_name
-        if getattr(ex_data, "target_sets", None) is not None:
-            exercise.target_sets = ex_data.target_sets
-        if getattr(ex_data, "target_reps", None) is not None:
-            exercise.target_reps = ex_data.target_reps
-        return exercise
-
 
 class SessionBuilder:
     """Gestiona la creación y actualización de sesiones."""
@@ -91,26 +77,5 @@ class RoutineBuilder:
             routine.sessions.append(session)
         return routine
 
-    @staticmethod
-    def update_routine(routine: Routine, routine_data, db):
-        """Actualiza una rutina existente sin sobrescribir sesiones previas."""
-        if getattr(routine_data, "name", None):
-            routine.name = routine_data.name
 
-        if getattr(routine_data, "sessions", None) is not None:
-            for s_data in routine_data.sessions:
-                if getattr(s_data, "id", None):
-                    existing_session = db.query(Session).filter(Session.id == s_data.id).first()
-                    if existing_session:
-                        SessionBuilder.update_session(existing_session, s_data, db)
-                    else:
-                        new_session = SessionBuilder.create_session(
-                            session_name=s_data.session_name, exercise_list=s_data.exercises, db=db
-                        )
-                        routine.sessions.append(new_session)
-                else:
-                    new_session = SessionBuilder.create_session(
-                        session_name=s_data.session_name, exercise_list=s_data.exercises, db=db
-                    )
-                    routine.sessions.append(new_session)
-        return routine
+    

@@ -1,10 +1,14 @@
-from fastapi import HTTPException
-from app.models.fitness import Routine, Session, Exercise
-from app.builders.routine_builder import RoutineBuilder, SessionBuilder, ExerciseBuilder
+from typing import List
 from sqlalchemy.orm import Session as db_Session
+from sqlalchemy import and_
+
+from app.models.fitness import Routine, Session, Exercise
+from app.models.associations import routines_sessions
+from app.builders.routine_builder import RoutineBuilder, SessionBuilder
 from app.errors.errors import EntityNotFoundError,ValidationError 
 class RoutineService:
-    """Servicio para gestionar operaciones relacionadas con rutinas de ejercicio.
+    """Servicio para gestionar operaciones relacionadas con rutinas de ejercicio
+    vinculando los builders con las acciones sobre la base de datos
     Proporciona métodos estáticos para crear y actualizar rutinas, validando
     datos de entrada y gestionando la persistencia en base de datos.
     """
@@ -91,3 +95,46 @@ class RoutineService:
         db.commit()
         db.refresh(routine)
         return routine
+    
+    @staticmethod
+    def delete_sessions(routine: Routine, session_ids: List[int], db):
+        """Elimina de una rutina las sesiones cuyos IDs se indiquen."""
+        if not session_ids:
+            raise ValidationError("Debe especificar al menos un ID de sesión a eliminar")
+
+        deleted = []
+        for sid in session_ids:
+            # query:
+            # SELECT s.* FROM sessions AS s
+            # JOIN routines_session AS rs ON s.id = rs.session_id
+            # WHERE rs.routine_id = :routine_ids AND s.id = :session_id
+            session = (
+                    db.query(Session)
+                    .join(routines_sessions, Session.id == routines_sessions.c.session_id)
+                    .filter(
+                        and_(
+                            routines_sessions.c.routine_id == routine.id,
+                            Session.id == sid
+                        )
+                    )
+            .first()
+        )
+            if not session:
+                raise EntityNotFoundError(f"La sesión con ID {sid} no existe en esta rutina")
+            db.delete(session)
+            deleted.append(sid)
+        return deleted
+    
+    @staticmethod
+    def update_exercise(db, ex_data):
+        """Actualiza un ejercicio existente según los datos recibidos."""
+        exercise = db.query(Exercise).filter(Exercise.id == ex_data.id).first()
+        if not exercise:
+            raise EntityNotFoundError(f"Exercise ID {ex_data.id} no encontrado")
+        if getattr(ex_data, "exercise_name", None):
+            exercise.exercise_name = ex_data.exercise_name
+        if getattr(ex_data, "target_sets", None) is not None:
+            exercise.target_sets = ex_data.target_sets
+        if getattr(ex_data, "target_reps", None) is not None:
+            exercise.target_reps = ex_data.target_reps
+        return exercise

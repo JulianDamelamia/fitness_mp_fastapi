@@ -34,6 +34,11 @@ class SessionResponse(SessionBase):
     class ConfigDict:
         from_attributes = True
 
+class SessionDeleteRequest(BaseModel):
+    """Cuerpo de una solicitud para eliminar sesiones de una rutina
+    """
+    session_ids: List[int]
+    
 ## --- SCHEMAS rutinas ---
 class RoutineBase(BaseModel):
     name: str
