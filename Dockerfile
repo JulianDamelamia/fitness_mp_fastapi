@@ -15,8 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expone el puerto en el que correrá uvicorn (FastAPI)
-EXPOSE 8000
+EXPOSE 10000
 
 # Comando para correr la aplicación
 # OBSERVACION: --host 0.0.0.0 es OBLIGATORIO para que sea accesible desde fuera del contenedor
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
