@@ -1,21 +1,55 @@
 # app/schemas/fitness.py
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
-## --- EXERCISE SCHEMAS ---
-# Schema base con campos comunes para ejercicios
+## --- SCHEMAS ejercicio ---
 class ExerciseBase(BaseModel):
-    name: str
-    primary_muscles: List[str]
-    secondary_muscles: List[str]
+    exercise_name: str
+    target_sets: int
+    target_reps: int
+    target_weight: Optional[float] = None
+    primary_muscles: Optional[List[str]] = None
+    secondary_muscles: Optional[List[str]] = None
 
-# Schema para crear un nuevo ejercicio
 class ExerciseCreate(ExerciseBase):
     pass
 
-# Schema para leer un ejercicio desde la API
-class Exercise(ExerciseBase):
+class ExerciseResponse(ExerciseBase):
     id: int
 
-    class Config:
-        from_attributes = True # Allows Pydantic to read from ORM models
+    class ConfigDict:
+        from_attributes = True
+
+## --- SCHEMAS sesiones ---
+class SessionBase(BaseModel):
+    session_name: str = None
+
+class SessionCreate(SessionBase):
+    exercises: List[ExerciseCreate] = []
+
+class SessionResponse(SessionBase):
+    id: int
+    exercises: List[ExerciseResponse]
+
+    class ConfigDict:
+        from_attributes = True
+
+class SessionDeleteRequest(BaseModel):
+    """Cuerpo de una solicitud para eliminar sesiones de una rutina
+    """
+    session_ids: List[int]
+    
+## --- SCHEMAS rutinas ---
+class RoutineBase(BaseModel):
+    name: str
+
+class RoutineCreate(RoutineBase):
+    sessions: List[SessionCreate] = []
+
+class RoutineResponse(RoutineBase):
+    id: int
+    creator_id: int
+    sessions: Optional[List[SessionResponse]] = None
+    class ConfigDict:
+        from_attributes = True
+

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ routine.name }}{% endblock %}
+{% block content %}
+<h1>{{ routine.name }}</h1>
+
+<h3>Sesiones:</h3>
+<ul>
+  {% for s in routine.sessions %}
+    <li>
+      <strong>{{ s.session_name }}</strong>
+      <ul>
+        {% for ex in s.exercises %}
+          <li>{{ ex.exercise_name }}, {{ ex.target_sets }}, {{ ex.target_reps }}</li>
+        {% else %}
+          <li><em>Sin ejercicios</em></li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% else %}
+    <li><em>No hay sesiones asignadas</em></li>
+  {% endfor %}
+</ul>
+
+<form action="/routines/{{ routine.id }}/delete" method="post">
+  <button type="submit" style="background:red;color:white">Eliminar rutina</button>
+</form>
+
+<a href="/routines">⬅ Volver</a>
+{% endblock %}

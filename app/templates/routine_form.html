@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Nueva Rutina{% endblock %}
+{% block content %}
+<h1>Nueva rutina</h1>
+<form action="{{ action_url }}" method="post">
+  <label>Nombre:</label>
+  <input type="text" name="name" value="{{ form_data.get('name', '') }}">
+  {% if errors.get("name") %}
+    <small style="color:red">{{ errors["name"] }}</small>
+  {% endif %}
+
+  <h3>Seleccionar sesiones existentes:</h3>
+  {% for s in sessions %}
+    <label>
+      <input type="checkbox" name="session_ids" value="{{ s.id }}"
+        {% if s.id in form_data.get("session_ids", []) %}checked{% endif %}>
+      {{ s.name }}
+    </label><br>
+  {% else %}
+    <p>No hay sesiones disponibles. <a href="/sessions/new">Crear una sesión</a></p>
+  {% endfor %}
+
+  <button type="submit">Guardar rutina</button>
+</form>
+{% endblock %}

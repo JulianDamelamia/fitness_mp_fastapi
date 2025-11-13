@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Rutinas{% endblock %}
+{% block content %}
+<h1>Rutinas</h1>
+<a href="/routines/new">➕ Nueva rutina</a>
+
+{% for routine in routines %}
+  <article>
+    <h2><a href="/routines/{{ routine.id }}">{{ routine.name }}</a></h2>
+    <ul>
+      {% for s in routine.sessions %}
+        <li>{{ s.session_name }}</li>
+        <ul>
+          {% for e in s.exercises %}
+            <li>{{ e.exercise_name }}, {{ e.target_sets }}, {{ e.target_reps }}</li>
+          {% else %}
+            <li><em>Sin ejercicios asignados</em></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <li><em>Sin sesiones asignadas</em></li>
+      {% endfor %}
+    </ul>
+  </article>
+{% else %}
+  <p>No hay rutinas aún.</p>
+{% endfor %}
+{% endblock %}

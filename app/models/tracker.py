@@ -1,19 +1,20 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float,String
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.db.session import Base
 
 class SessionLog(Base):
     __tablename__ = "session_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    date = Column(DateTime, default=datetime.utcnow)
-    
+    date = Column(DateTime, default=datetime.now(timezone.utc))
+
     #relación con la sesión abstracta
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
-    session = relationship("Session")
+    session = relationship("Session", back_populates='session_logs')
+    
     #relación con los ejercicios logueados
-    exercises = relationship("ExerciseLog", back_populates="session_log", cascade="all, delete-orphan")
+    exercise_logs = relationship("ExerciseLog", back_populates="session_logs", cascade="all, delete-orphan")
 
 
 class ExerciseLog(Base):
@@ -24,7 +25,7 @@ class ExerciseLog(Base):
     set_n = Column(Integer, nullable=False)
 
     session_log_id = Column(Integer, ForeignKey("session_logs.id"), nullable=False)
-    session_log = relationship("SessionLog", back_populates="exercises")
+    session_logs = relationship("SessionLog", back_populates="exercise_logs")
 
     
     exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=True)
