@@ -22,7 +22,7 @@ class Plan(Base):
         secondary=plans_routines,
         back_populates='plans'
     )
-    purchases = relationship("Purchase", back_populates="plan")
+    purchases = relationship("Purchase", back_populates="plan", cascade="all, delete-orphan")
 
     buyers = relationship(
         "User",

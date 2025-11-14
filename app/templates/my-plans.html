@@ -3,26 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <title>Mis Planes</title>
-    <style>
-        body { font-family: sans-serif; padding: 2em; }
-        .plan { border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em; }
-        .plan h2 { margin-top: 0; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 </head>
 <body>
+<main class="container">
     <h1>Mis Planes Comprados</h1>
     <a href="/dashboard">Volver al Dashboard</a> | <a href="/plans/">Ver más planes</a>
     <hr>
 
     {% if plans %}
         {% for plan in plans %}
-            <div class="plan">
-                <h2>{{ plan.title }}</h2>
+            <article>
+                <header>
+                    <h2>{{ plan.title }}</h2>
+                </header>
+                
                 <p>{{ plan.description or 'Sin descripción.' }}</p>
-            </div>
+
+                {% if plan.routines %}
+                    {% for routine in plan.routines %}
+                        <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                            Rutina: {{ routine.name }}
+                        </h3>
+                        
+                        <ul>
+                        {% for session in routine.sessions %}
+                            <li>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+                                    <div>
+                                        <strong>{{ session.session_name }}</strong>
+                                        <ul style="font-size: 0.9em; margin: 0; padding-left: 20px;">
+                                            {% for ex in session.exercises %}
+                                                <li><small>{{ ex.exercise_name }} ({{ ex.target_sets }}x{{ ex.target_reps }})</small></li>
+                                            {% else %}
+                                                <li><small><em>(Sin ejercicios)</em></small></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <a href="/track/session/{{ session.id }}" role="button" 
+                                       style="white-space: nowrap; margin-left: 1em;">
+                                        ▶ Empezar
+                                    </a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li><p><em>Esta rutina no tiene sesiones asignadas.</em></p></li>
+                        {% endfor %}
+                        </ul>
+                    {% endfor %}
+                {% else %}
+                    <p><em>Este plan aún no tiene rutinas asociadas.</em></p>
+                {% endif %}
+                
+            </article>
         {% endfor %}
     {% else %}
         <p>Aún no has comprado ningún plan.</p>
     {% endif %}
+</main>
 </body>
 </html>

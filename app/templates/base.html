@@ -2,22 +2,44 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>{% block title %}App de Entrenamiento{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Mi App Fitness{% endblock %}</title>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+  <style>
+    .notification-item {
+      border: 1px solid #ddd; padding: 1em; margin-bottom: 1em;
+      border-radius: 8px; background-color: #fff; color: #888;
+      border-left: 5px solid #ddd; transition: all 0.3s ease;
+    }
+    .notification-item.unread {
+      background-color: #f8f9fa; color: #111;
+      font-weight: 600; border-left: 5px solid #1095c1;
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
 </head>
+
 <body>
-  <nav>
+
+<nav class="container-fluid">
     <ul>
-      <li><strong><a href="/">Inicio</a></strong></li>
+      <li><strong><a href="/dashboard">Inicio</a></strong></li>
     </ul>
     <ul>
       <li><a href="/routines">Rutinas</a></li>
       <li><a href="/sessions">Sesiones</a></li>
+      <li><a href="/track/history">Historial</a></li>
+      <li><a href="/notifications">🔔 Notificaciones</a></li>
     </ul>
-  </nav>
+</nav>
 
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
+<main class="container">
+    {% block content %}
+    {% endblock %}
+</main>
+
 </body>
 </html>

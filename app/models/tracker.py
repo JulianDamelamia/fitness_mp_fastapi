@@ -13,6 +13,10 @@ class SessionLog(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     session = relationship("Session", back_populates='session_logs')
     
+    # Relación con el usuario que realizó el log
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="session_logs")
+
     #relación con los ejercicios logueados
     exercise_logs = relationship("ExerciseLog", back_populates="session_logs", cascade="all, delete-orphan")
 

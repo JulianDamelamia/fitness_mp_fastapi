@@ -1,28 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Rutinas{% endblock %}
-{% block content %}
-<h1>Rutinas</h1>
-<a href="/routines/new">➕ Nueva rutina</a>
 
+{% block title %}Mis Rutinas{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Mis Rutinas</h2>
+    <a href="/routines/new" role="button">➕ Nueva Rutina</a>
+</div>
+
+{% if not routines %}
+    <p>No tenés rutinas creadas todavía.</p>
+{% endif %}
+
+<div style="margin-top:1.5rem;">
 {% for routine in routines %}
-  <article>
-    <h2><a href="/routines/{{ routine.id }}">{{ routine.name }}</a></h2>
-    <ul>
-      {% for s in routine.sessions %}
-        <li>{{ s.session_name }}</li>
-        <ul>
-          {% for e in s.exercises %}
-            <li>{{ e.exercise_name }}, {{ e.target_sets }}, {{ e.target_reps }}</li>
-          {% else %}
-            <li><em>Sin ejercicios asignados</em></li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <li><em>Sin sesiones asignadas</em></li>
-      {% endfor %}
-    </ul>
-  </article>
-{% else %}
-  <p>No hay rutinas aún.</p>
+    <article>
+        <header>
+            <strong>{{ routine.name }}</strong>
+        </header>
+        
+        <p><strong>Sesiones:</strong> {{ routine.sessions|length }}</p>
+
+        <a href="/routines/{{ routine.id }}" role="button" class="secondary outline">Ver detalle</a>
+
+        <form method="post" action="/routines/{{ routine.id }}/delete" style="margin-top:1rem; margin-bottom: 0;">
+            <button type="submit" class="secondary" style="background-color:#d32f2f; border-color:#d32f2f;">
+                Eliminar
+            </button>
+        </form>
+    </article>
 {% endfor %}
+</div>
+
 {% endblock %}

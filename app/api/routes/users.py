@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Header, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -98,3 +99,47 @@ def approve_trainer(
         username=username, 
         message="Usuario aprobado como entrenador exitosamente"
     )
+
+@router.post("/follow/{user_id}")
+def follow_user(
+    user_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    user_to_follow = db.query(User).filter(User.id == user_id).first()
+    if not user_to_follow:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Evitar auto-seguirse
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="No puedes seguirte a ti mismo")
+
+    # Añadir a la lista de 'following'
+    if user_to_follow not in current_user.following:
+        current_user.following.append(user_to_follow)
+        db.commit()
+
+    # Redirigimos al usuario a la página donde estaba
+    referer_url = request.headers.get("referer", "/")
+    return RedirectResponse(url=referer_url, status_code=303)
+
+
+@router.post("/unfollow/{user_id}")
+def unfollow_user(
+    user_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    user_to_unfollow = db.query(User).filter(User.id == user_id).first()
+    if not user_to_unfollow:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Quitar de la lista de 'following'
+    if user_to_unfollow in current_user.following:
+        current_user.following.remove(user_to_unfollow)
+        db.commit()
+
+    referer_url = request.headers.get("referer", "/")
+    return RedirectResponse(url=referer_url, status_code=303)

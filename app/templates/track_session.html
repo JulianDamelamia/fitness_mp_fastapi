@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Registrando: {{ session.session_name }}{% endblock %}
+
+{% block content %}
+<a href="/sessions">⬅ Cancelar</a>
+<h1>Registrando: {{ session.session_name }}</h1>
+
+<p>Completa el peso y las repeticiones que realizaste hoy.</p>
+
+<form action="/track/log_session" method="post">
+    
+    <input type="hidden" name="session_template_id" value="{{ session.id }}">
+
+    {% for ex in session.exercises %}
+    <article>
+        <h4>{{ ex.exercise_name }}</h4>
+        <small>Planificado: {{ ex.target_sets }} series de {{ ex.target_reps }} reps</small>
+        
+        <label>Peso (kg) (mantenido para todas las series):</label>
+        <input type="number" step="0.1" name="exercise.{{ ex.id }}.weight" required>
+        
+        <label>Reps realizadas por serie:</label>
+        
+        {% for i in range(1, ex.target_sets + 1) %}
+            <input type="number" name="exercise.{{ ex.id }}.reps" placeholder="Reps Serie {{ i }}" required>
+        {% endfor %}
+
+    </article>
+    {% endfor %}
+
+    <hr>
+    <button type="submit">Finalizar y Guardar Entrenamiento</button>
+</form>
+
+{% endblock %}
