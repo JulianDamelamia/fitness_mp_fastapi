@@ -22,7 +22,8 @@ class ExerciseResponse(ExerciseBase):
 
 ## --- SCHEMAS sesiones ---
 class SessionBase(BaseModel):
-    session_name: str = None
+    session_name: Optional[str] = None
+    id: Optional[int] = None
 
 class SessionCreate(SessionBase):
     exercises: List[ExerciseCreate] = []

@@ -86,11 +86,27 @@ class RoutineBuilder:
             raise ValidationError("El campo 'name' es obligatorio y no puede estar vacío")
 
         routine = Routine(name=routine_data.name, creator_id=creator_id)
+        
         for s in routine_data.sessions:
-            session = SessionBuilder.create_session(
-                session_name=s.session_name, exercise_list=s.exercises, db=db
-            )
-            routine.sessions.append(session)
+            session_to_add = None
+            
+            # CASO 1: El usuario seleccionó una sesión existente
+            if getattr(s, "id", None):
+                session_to_add = db.query(Session).filter_by(id=s.id).first()
+                if not session_to_add:
+                    raise EntityNotFoundError(f"Sesión con ID {s.id} no encontrada")
+            
+            # CASO 2: El usuario está creando una sesión nueva
+            else:
+                session_to_add = SessionBuilder.create_session(
+                    session_name=s.session_name, 
+                    exercise_list=s.exercises, 
+                    db=db
+                )
+            
+            if session_to_add:
+                routine.sessions.append(session_to_add)
+        
         return routine
 
 
