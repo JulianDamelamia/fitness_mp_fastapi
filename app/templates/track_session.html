@@ -2,8 +2,11 @@
 {% block title %}Registrando: {{ session.session_name }}{% endblock %}
 
 {% block content %}
-<a href="/sessions">⬅ Cancelar</a>
-<h1>Registrando: {{ session.session_name }}</h1>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Registrando: {{ session.session_name }}</h1>
+</div>
+<a href="/sessions">⬅ Cancelar y Volver a Sesiones</a>
+<hr>
 
 <p>Completa el peso y las repeticiones que realizaste hoy.</p>
 
@@ -13,17 +16,37 @@
 
     {% for ex in session.exercises %}
     <article>
-        <h4>{{ ex.exercise_name }}</h4>
+        <header>
+            <h4>{{ ex.exercise_name }}</h4>
+        </header>
+        
         <small>Planificado: {{ ex.target_sets }} series de {{ ex.target_reps }} reps</small>
         
-        <label>Peso (kg) (mantenido para todas las series):</label>
-        <input type="number" step="0.1" name="exercise.{{ ex.id }}.weight" required>
-        
-        <label>Reps realizadas por serie:</label>
-        
-        {% for i in range(1, ex.target_sets + 1) %}
-            <input type="number" name="exercise.{{ ex.id }}.reps" placeholder="Reps Serie {{ i }}" required>
-        {% endfor %}
+        <div class="grid">
+            
+            <div>
+                <label for="exercise.{{ ex.id }}.weight">Peso (kg) (para todas las series):</label>
+                <input typeid="exercise.{{ ex.id }}.weight" type="number" step="0.1" name="exercise.{{ ex.id }}.weight" required>
+            </div>
+            
+            <div>
+                <label for="exercise.{{ ex.id }}.reps">Reps realizadas por serie:</label>
+                
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem;">
+                
+                {% for i in range(1, ex.target_sets + 1) %}
+                    <div>
+                        <input type="number" 
+                               name="exercise.{{ ex.id }}.reps" 
+                               placeholder="Serie {{ i }}" 
+                               aria-label="Reps Serie {{ i }}"
+                               required>
+                    </div>
+                {% endfor %}
+                
+                </div>
+            </div>
+        </div>
 
     </article>
     {% endfor %}

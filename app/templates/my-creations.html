@@ -1,71 +1,94 @@
-<h2>Mis Planes Creados</h2>
+{% extends "base.html" %}
+{% block title %}Gestionar mis Creaciones{% endblock %}
 
-{% if plans %}
-    {% for plan in plans %}
-    <article style="border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em;">
-        <header style="display: flex; justify-content: space-between; align-items: center;">
-            <strong>{{ plan.title }} (${{ plan.price }})</strong>
-            
-            <form action="/plans/{{ plan.id }}/delete" method="post" style="margin: 0;">
-                <button type="submit" style="background-color: #d9534f; color: white; padding: 0.5em 1em;">
-                    Eliminar
-                </button>
-            </form>
-        </header>
-        <p>{{ plan.description or 'Sin descripción.' }}</p>
-        </article>
-    {% endfor %}
-{% else %}
-    <p>Aún no has creado ningún plan.</p>
-{% endif %}
+{% block content %}
 
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Gestionar mis Creaciones</h1>
+</div>
+<a href="/dashboard">⬅ Volver al Dashboard</a>
 <hr>
-<h2>Crear Nuevo Plan</h2>
-    <div class="form-crear">
-        <form action="/plans/" method="post">
-            <label for="title">Título:</label>
-            <input type="text" name="title" required>
-            
-            <label for="description">Descripción:</label>
-            <textarea name="description" rows="3"></textarea>
-            
-            <label for="price">Precio (ARS):</label>
-            <input type="number" name="price" required>
-            
-            <label>Asociar Rutinas (opcional):</label>
-            <div style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; max-height: 250px; overflow-y: auto;">
+
+<div class="grid">
+
+    <div>
+        <h2>Mis Planes Creados</h2>
+        {% if plans %}
+            {% for plan in plans %}
+            <article style="margin-bottom: 1rem;">
+                <header style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>{{ plan.title }} (${{ plan.price }})</strong>
+                </header>
+                <p>{{ plan.description or 'Sin descripción.' }}</p>
                 
-                {% for routine in routines %}
-                <div class="routine-checkbox-item" style="margin-bottom: 1em; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
-                    
-                    <label>
-                        <input type="checkbox" name="routine_ids" value="{{ routine.id }}">
-                        <strong>{{ routine.name }}</strong>
-                    </label>
-                    
-                    <ul style="font-size: 0.9em; margin-top: 5px;">
-                        {% for s in routine.sessions %}
-                            <li>
-                                <strong>{{ s.session_name }}</strong>
-                                <ul style="list-style-type: disc; margin-left: 20px;">
-                                    {% for ex in s.exercises %}
-                                        <li>
-                                            <small>{{ ex.exercise_name }} ({{ ex.target_sets }}x{{ ex.target_reps }})</small>
-                                        </li>
-                                    {% else %}
-                                        <li><small><em>(Sin ejercicios)</em></small></li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        {% else %}
-                            <li><small><em>(Sin sesiones)</em></small></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                    <small>No tenés rutinas creadas. <a href="/routines">Creá una rutina</a> primero.</small>
-                {% endfor %}
-                </div>
-            <button type="submit">Publicar Plan</button>
-        </form>
+                <footer>
+                    <form action="/plans/{{ plan.id }}/delete" method="post" style="margin: 0;">
+                        <button type="submit" class="secondary outline" style="background-color: var(--pico-color-red); border-color: var(--pico-color-red); color: var(--pico-color-white);">
+                            Eliminar
+                        </button>
+                    </form>
+                </footer>
+            </article>
+            {% endfor %}
+        {% else %}
+            <p>Aún no has creado ningún plan.</p>
+        {% endif %}
     </div>
+
+    <div>
+        <article>
+            <header>
+                <strong>Crear Nuevo Plan</strong>
+            </header>
+            
+            <form action="/plans/" method="post">
+                <label for="title">Título:</label>
+                <input type="text" id="title" name="title" required>
+                
+                <label for="description">Descripción:</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+                
+                <label for="price">Precio (ARS):</label>
+                <input type="number" id="price" name="price" required>
+                
+                <label for="routines">Asociar Rutinas (opcional):</label>
+                <div id="routines" style="padding: 10px; border: 1px solid var(--pico-card-border-color); border-radius: var(--pico-border-radius); margin-bottom: 10px; max-height: 250px; overflow-y: auto; background-color: var(--pico-form-element-background-color);">
+                    
+                    {% for routine in routines %}
+                    <div class="routine-checkbox-item" style="margin-bottom: 1em; border-bottom: 1px solid var(--pico-card-border-color); padding-bottom: 10px;">
+                        
+                        <label>
+                            <input type="checkbox" name="routine_ids" value="{{ routine.id }}">
+                            <strong>{{ routine.name }}</strong>
+                        </label>
+                        
+                        <ul style="font-size: 0.9em; margin-top: 5px; padding-left: 1.5rem;">
+                            {% for s in routine.sessions %}
+                                <li>
+                                    <small><strong>{{ s.session_name }}</strong></small>
+                                    <ul style="list-style-type: disc; margin-left: 20px;">
+                                        {% for ex in s.exercises %}
+                                            <li>
+                                                <small>{{ ex.exercise_name }} ({{ ex.target_sets }}x{{ ex.target_reps }})</small>
+                                            </li>
+                                        {% else %}
+                                            <li><small><em>(Sin ejercicios)</em></small></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li><small><em>(Sin sesiones)</em></small></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                        <small>No tenés rutinas creadas. <a href="/routines" class="secondary">Creá una rutina</a> primero.</small>
+                    {% endfor %}
+                </div>
+                <button type="submit">Publicar Plan</button>
+            </form>
+        </article>
+    </div>
+</div>
+
+{% endblock %}

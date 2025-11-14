@@ -1,37 +1,51 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>¡Bienvenido, {{ username }}!</h1>
-    
-    <p>¿Qué quieres hacer?</p>
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
 
-    <h2>Gestión de Entrenamiento</h2>
-    <ul>
-        <li><a href="/routines">Gestionar mis Rutinas</a></li>
-        <li><a href="/sessions">Gestionar mis Sesiones (bloques)</a></li>
-    </ul>
-    <hr>
-    <h2>Planes y Compras</h2>
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>¡Bienvenido, {{ username }}!</h1>
+</div>
+<p>¿Qué quieres hacer?</p>
+
+<h2>Gestión de Entrenamiento</h2>
+<div class="grid">
+    <article>
+        <header><strong>Mis Rutinas</strong></header>
+        <p>Crear y editar tus rutinas completas.</p>
+        <footer><a href="/routines" role="button">Gestionar Rutinas</a></footer>
+    </article>
+    
+    <article>
+        <header><strong>Mis Sesiones</strong></header>
+        <p>Crear y editar bloques de sesiones individuales.</p>
+        <footer><a href="/sessions" role="button">Gestionar Sesiones</a></footer>
+    </article>
+</div>
+
+<hr>
+
+<h2>Planes y Compras</h2>
+<div class="grid">
     
     {% if role == "TRAINER" %}
-        <ul>
-            <li><a href="/plans/my-creations/">Gestionar mis planes creados</a></li>
-            <hr>
-            <li><a href="/plans/">Ver catálogo de otros planes</a></li>
-            <li><a href="/plans/my-plans/">Ver mis planes comprados</a></li>
-        </ul>
-        
-    {% elif role == "USER" %}
-        <ul>
-            <li><a href="/plans/">Ver catálogo de planes</a></li>
-            <li><a href="/plans/my-plans/">Ver mis planes comprados</a></li>
-        </ul>
-        
+    <article>
+        <header><strong>Mis Creaciones</strong></header>
+        <p>Gestionar los planes que creaste para vender.</p>
+        <footer><a href="/plans/my-creations/" role="button">Gestionar Creaciones</a></footer>
+    </article>
     {% endif %}
+
+    <article>
+        <header><strong>Comprar Planes</strong></header>
+        <p>Ver el catálogo de planes de otros entrenadores.</p>
+        <footer><a href="/plans/" role="button" class="secondary">Ver Catálogo</a></footer>
+    </article>
     
-</body>
-</html>
+    <article>
+        <header><strong>Mis Planes Comprados</strong></header>
+        <p>Ver y empezar los planes que ya compraste.</p>
+        <footer><a href="/plans/my-plans/" role="button" class="secondary">Ver Mis Compras</a></footer>
+    </article>
+
+</div>
+{% endblock %}

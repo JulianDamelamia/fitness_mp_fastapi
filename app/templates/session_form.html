@@ -1,12 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Nueva Sesión{% endblock %}
+
 {% block content %}
-<h1>Crear Sesión</h1>
-<form method="post" action="/sessions/new">
-    <label>Nombre de la sesión:
-        <input type="text" name="name" required>
-    </label>
-    <button type="submit">Guardar</button>
-</form>
-<a href="/sessions">Cancelar</a>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Crear nueva sesión</h2>
+</div>
+<a href="/sessions">⬅ Volver a Mis Sesiones</a>
+<hr>
+
+<article>
+    <form method="post" action="/sessions/new">
+        
+        <label for="name">Nombre de la sesión:</label>
+        <input type="text" name="name" id="name" required placeholder="Ej: Día de Pecho y Tríceps">
+        
+        <p><small>Podrás añadir ejercicios a esta sesión después de crearla (en la pantalla de "Ver/Editar").</small></p>
+        
+        <hr>
+        
+        <footer>
+            <div class="grid">
+                <a href="/sessions" role="button" class="secondary outline">Cancelar</a>
+                <button type="submit">Guardar Sesión</button>
+            </div>
+        </footer>
+    </form>
+</article>
+
 {% endblock %}
