@@ -1,5 +1,6 @@
-from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
+
+from jose import jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 
@@ -17,10 +18,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/home/login")
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def verify_password(password: str, hashed: str) -> bool:
-    # Necesitas importar verify_password y hash_password de la versión anterior 
+    # Necesitas importar verify_password y hash_password de la versión anterior
     # si no estaban en el extracto que me enviaste.
     return pwd_context.verify(password, hashed)
+
 
 # --- FUNCIÓN DE JWT ---
 def create_access_token(data: dict):
@@ -28,12 +31,3 @@ def create_access_token(data: dict):
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-# def verify_access_token(token: str):
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         return payload
-#     except JWTError:
-#         return None
-# Se ELIMINA la función 'authenticate_user' y cualquier referencia a 'fake_user_db'
-# porque esa lógica le corresponde a la capa de SERVICIOS o REPOSITORIOS.

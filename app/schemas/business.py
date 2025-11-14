@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class PlanBase(BaseModel):
@@ -8,8 +9,10 @@ class PlanBase(BaseModel):
     description: Optional[str] = None
     price: int
 
+
 class PlanCreate(PlanBase):
     pass
+
 
 class Plan(PlanBase):
     id: int
@@ -22,12 +25,13 @@ class Plan(PlanBase):
 class PurchaseCreate(BaseModel):
     plan_id: int
 
+
 class Purchase(BaseModel):
     id: int
     user_id: int
     plan_id: int
     created_at: datetime
-    plan: Plan # Detalles del plan comprado
+    plan: Plan  # Detalles del plan comprado
 
     class Config:
         from_attributes = True

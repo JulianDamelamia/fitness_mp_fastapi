@@ -1,10 +1,10 @@
-# database.py
+import os
+from dotenv import load_dotenv
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
-from dotenv import load_dotenv
+
 
 # cargamos las variables de entorno desde el archivo .env (si corremos localmente)
 load_dotenv()
@@ -31,7 +31,7 @@ if DATABASE_URL:
 
 else:
     raise ValueError(
-        "DATABASE_URL no está definida. Asegúrate de tener un .env local o de que esté configurada en producción."
+        "DATABASE_URL no está definida correctamente en las variables de entorno."
     )
 
 

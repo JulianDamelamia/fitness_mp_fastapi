@@ -1,13 +1,24 @@
 # app/models/fitness.py
 from app.db.session import Base
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey, Boolean, Text, Float,DateTime, Table
-from sqlalchemy.orm import relationship
 from app.models.associations import routines_sessions, plans_routines
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    JSON,
+    ForeignKey,
+    Float,
+)
+from sqlalchemy.orm import relationship
+
+
 # Formato:
 # class NombreSingular(Base):
 #   __tablename__ = 'nombre_plural'
 # atributo = Column()
 # relacion = relationship('ObjetoDestino', back_populates='relacion_destino')
+
 
 class Routine(Base):
     """attrs:
@@ -19,23 +30,19 @@ class Routine(Base):
     plans: Plan
     sessions: [Session]
     """
-    __tablename__= "routines"
-    id = Column(Integer, primary_key=True, index = True)
-    name = Column(String, nullable=False)
-    creator_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    
-    creator = relationship("User", back_populates='created_routines')
-    plans = relationship(
-        'Plan',
-        secondary=plans_routines,
-        back_populates='routines'
-    )
-    sessions = relationship(
-        'Session',
-        secondary = routines_sessions,
-        back_populates='routines')
 
- 
+    __tablename__ = "routines"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    creator = relationship("User", back_populates="created_routines")
+    plans = relationship("Plan", secondary=plans_routines, back_populates="routines")
+    sessions = relationship(
+        "Session", secondary=routines_sessions, back_populates="routines"
+    )
+
+
 class Session(Base):
     """attrs:
     id: int not_null
@@ -44,22 +51,23 @@ class Session(Base):
     exercises: [Exercise]
     session_logs: [SessionLog]
     """
+
     __tablename__ = "sessions"
-    id = Column(Integer, primary_key=True, index = True)
+    id = Column(Integer, primary_key=True, index=True)
     session_name = Column(String, nullable=False)
 
-    creator_id = Column(Integer, ForeignKey('users.id'))
-    creator = relationship("User", back_populates='created_sessions')
+    creator_id = Column(Integer, ForeignKey("users.id"))
+    creator = relationship("User", back_populates="created_sessions")
 
     routines = relationship(
-        'Routine',
-        secondary=routines_sessions,
-        back_populates='sessions'
+        "Routine", secondary=routines_sessions, back_populates="sessions"
     )
-    exercises = relationship('Exercise', back_populates='session', cascade="all, delete-orphan")
-    session_logs = relationship('SessionLog', back_populates='session', cascade="all, delete-orphan")
-    
-
+    exercises = relationship(
+        "Exercise", back_populates="session", cascade="all, delete-orphan"
+    )
+    session_logs = relationship(
+        "SessionLog", back_populates="session", cascade="all, delete-orphan"
+    )
 
 
 # Ejercicio como elemento abstracto que compone las sesiones
@@ -76,6 +84,7 @@ class Exercise(Base):
     secondary_muscles: JSON not_null
     logs: [ExerciseLog]
     """
+
     __tablename__ = "exercises"
     id = Column(Integer, primary_key=True)
     session_id = Column(Integer, ForeignKey("sessions.id"))
@@ -86,6 +95,6 @@ class Exercise(Base):
 
     session = relationship("Session", back_populates="exercises")
 
-    primary_muscles = Column(JSON)   # e.g., ["pecho", "tríceps"]
-    secondary_muscles = Column(JSON) # e.g., ["hombros"]
-    logs = relationship("ExerciseLog",back_populates='exercise')
+    primary_muscles = Column(JSON)  # e.g., ["pecho", "tríceps"]
+    secondary_muscles = Column(JSON)  # e.g., ["hombros"]
+    logs = relationship("ExerciseLog", back_populates="exercise")

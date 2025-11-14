@@ -1,7 +1,10 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float,String
-from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String
+from sqlalchemy.orm import relationship
+
 from app.db.session import Base
+
 
 class SessionLog(Base):
     __tablename__ = "session_logs"
@@ -9,16 +12,18 @@ class SessionLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, default=datetime.now(timezone.utc))
 
-    #relación con la sesión abstracta
+    # relación con la sesión abstracta
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
-    session = relationship("Session", back_populates='session_logs')
-    
+    session = relationship("Session", back_populates="session_logs")
+
     # Relación con el usuario que realizó el log
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="session_logs")
 
-    #relación con los ejercicios logueados
-    exercise_logs = relationship("ExerciseLog", back_populates="session_logs", cascade="all, delete-orphan")
+    # relación con los ejercicios logueados
+    exercise_logs = relationship(
+        "ExerciseLog", back_populates="session_logs", cascade="all, delete-orphan"
+    )
 
 
 class ExerciseLog(Base):
@@ -31,9 +36,10 @@ class ExerciseLog(Base):
     session_log_id = Column(Integer, ForeignKey("session_logs.id"), nullable=False)
     session_logs = relationship("SessionLog", back_populates="exercise_logs")
 
-    
     exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=True)
     exercise = relationship("Exercise", back_populates="logs", lazy="joined")
+
+
 # # Sesión concreta realizada por el usuario
 # class Session(Base):
 #     __tablename__ = "sessions"
