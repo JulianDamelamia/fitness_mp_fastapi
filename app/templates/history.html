@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Historial de Entrenamientos{% endblock %}
+
+{% block content %}
+<h1>Historial de Entrenamientos</h1>
+<a href="/sessions">⬅ Volver a Sesiones</a>
+
+<hr>
+
+{% if logs %}
+    {% for log in logs %}
+    <article>
+        <header>
+            <strong>{{ log.session.session_name }}</strong> - 
+            <small>{{ log.date.strftime('%Y-%m-%d %H:%M') }}</small>
+        </header>
+        
+        {% for exercise_name, sets in log.exercise_logs|groupby('exercise.exercise_name') %}
+            <strong>{{ exercise_name }}:</strong>
+            <ul>
+                {% for s in sets %}
+                <li>
+                    Set {{ s.set_n }}: {{ s.weight }}kg x {{ s.reps }} reps
+                </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+        
+    </article>
+    {% endfor %}
+{% else %}
+    <p>Aún no has registrado ningún entrenamiento.</p>
+    <p><a href="/sessions">Empezá uno ahora</a></p>
+{% endif %}
+
+{% endblock %}

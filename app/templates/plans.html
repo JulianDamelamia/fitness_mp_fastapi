@@ -20,6 +20,26 @@
         {% for plan in plans %}
             <div class="plan">
                 <h2>{{ plan.title }}</h2>
+                
+                <p>
+                    <strong>Creado por:</strong> 
+                    {{ plan.creator.username }} 
+                    
+                    {% if plan.creator.id != current_user.id %}
+                        
+                        {% if plan.creator.id in following_ids %}
+                            <form action="/users/unfollow/{{ plan.creator.id }}" method="post" style="display: inline; margin-left: 10px;">
+                                <button type="submit" class="secondary outline">Dejar de Seguir</button>
+                            </form>
+                        
+                        {% else %}
+                            <form action="/users/follow/{{ plan.creator.id }}" method="post" style="display: inline; margin-left: 10px;">
+                                <button type="submit" class="primary">Seguir</button>
+                            </form>
+                        {% endif %}
+
+                    {% endif %}
+                </p>
                 <p>{{ plan.description or 'Sin descripción.' }}</p>
                 <p><strong>Precio:</strong> ${{ plan.price }}</p>
                 

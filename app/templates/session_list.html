@@ -6,9 +6,14 @@
 <hr>
 <ul>
     {% for session in sessions %}
-        <li>{{ session.session_name }}</li>
-    {% else %}
-        <li>No hay sesiones creadas.</li>
+        <li>
+            <a href="/sessions/{{ session.id }}">{{ session.session_name }}</a>
+            
+            <a href="/track/session/{{ session.id }}" role="button" 
+               style="display: inline-block; padding: 5px 10px; font-size: 0.8em; margin-left: 15px; text-decoration: none;">
+                ▶ Empezar
+            </a>
+            </li>No hay sesiones creadas.</li>
     {% endfor %}
 </ul>
 {% endblock %}

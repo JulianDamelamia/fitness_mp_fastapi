@@ -4,15 +4,43 @@
   <meta charset="UTF-8">
   <title>{% block title %}App de Entrenamiento{% endblock %}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-</head>
+  
+<style>
+    /* Estilo para las notificaciones LEÍDAS (el estado base)
+      Las hacemos "grises" para que parezcan desactivadas.
+    */
+    .notification-item {
+      border: 1px solid #ddd;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 8px;
+      background-color: #fff;
+      color: #888; /* Texto gris */
+      border-left: 5px solid #ddd; /* Borde gris */
+      transition: all 0.3s ease; /* Transición suave */
+    }
+    
+    /* Estilo para las NO LEÍDAS (el estado destacado)
+      Las hacemos más notorias.
+    */
+    .notification-item.unread {
+      background-color: #f8f9fa;
+      color: #111; /* Texto oscuro (default) */
+      font-weight: 600; /* Semi-negrita */
+      border-left: 5px solid #1095c1; /* Borde azul primario */
+    }
+  </style>
+  </head>
 <body>
   <nav>
     <ul>
-      <li><strong><a href="/">Inicio</a></strong></li>
+      <li><strong><a href="/dashboard">Inicio</a></strong></li>
     </ul>
     <ul>
       <li><a href="/routines">Rutinas</a></li>
       <li><a href="/sessions">Sesiones</a></li>
+      <li><a href="/track/history">Historial</a></li>
+      <li><a href="/notifications">🔔 Notificaciones</a></li>
     </ul>
   </nav>
 

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Notificaciones</h1>
+    <form action="/notifications/mark_as_read" method="post">
+        <button type="submit">Marcar todas como leídas</button>
+    </form>
+</div>
+<hr>
+
+{% if notifications %}
+    <ul style="list-style: none; padding: 0;">
+    
+    {% for notif in notifications %}
+    
+        <li class="notification-item {% if not notif.is_read %}unread{% endif %}">
+        
+            <p>{{ notif.message }}</p>
+            <small style="color: #777;">
+                {{ notif.created_at }}
+            </small>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No tenés notificaciones.</p>
+{% endif %}
+
+{% endblock %}

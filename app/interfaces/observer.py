@@ -10,9 +10,14 @@ class Observer(ABC):
 
 class Subject(ABC):
 
-    def __init__(self):
-        # Lista privada de observadores
+    def __init__(self, delegator: Any = None):
+        """
+        Guarda una referencia al objeto 'dueño' (el User)
+        para pasarlo en las notificaciones.
+        """
         self._observers: List[Observer] = []
+        # Si nos pasan un 'dueño', lo guardamos. Si no, somos nuestro propio dueño.
+        self._delegator = delegator if delegator is not None else self
 
     def registerObserver(self, observer: Observer) -> None:
         """
@@ -34,7 +39,8 @@ class Subject(ABC):
         """
         Notifica a todos los observadores.
         """
-        # Notificamos a una copia de la lista por si un observer
-        # intenta desuscribirse (detach) durante la notificación.
         for observer in self._observers[:]: 
-            observer.update(self, event_data)
+            # --- INICIO DE MODIFICACIÓN 2 ---
+            # Pasamos el 'dueño' (self._delegator, o sea el User)
+            # en lugar de 'self' (el objeto Subject).
+            observer.update(self._delegator, event_data)

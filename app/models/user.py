@@ -1,9 +1,10 @@
-# app/models/user.py
 from sqlalchemy import Column, Integer, String, Enum, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy import event
 from app.db.session import Base
 import enum
 from app.models.associations import user_follows
+from app.interfaces.observer import Subject, Observer
 
 
 class UserRole(str, enum.Enum):
@@ -43,7 +44,7 @@ class User(Base):
         "Notification", 
         back_populates="user", 
         cascade="all, delete-orphan",
-        order_by="desc(Notification.created_at)" # Opcional: ordenarlas
+        order_by="desc(Notification.created_at)"
     )
 
     # 'following' (A quién sigo)
@@ -63,3 +64,33 @@ class User(Base):
         secondaryjoin=(user_follows.c.follower_id == id),
         back_populates="following"
     )
+    
+    # Relación con los entrenamientos que este usuario registró
+    session_logs = relationship(
+        "SessionLog", 
+        back_populates="user", 
+        cascade="all, delete-orphan",
+        order_by="desc(SessionLog.date)"
+    )
+
+    def registerObserver(self, observer: Observer) -> None:
+        if hasattr(self, 'subject_delegate'):
+            self.subject_delegate.registerObserver(observer)
+
+    def removeObserver(self, observer: Observer) -> None:
+        if hasattr(self, 'subject_delegate'):
+            self.subject_delegate.removeObserver(observer)
+
+    def notifyObservers(self, event_data: any) -> None:
+        if hasattr(self, 'subject_delegate'):
+            self.subject_delegate.notifyObservers(event_data)
+
+
+@event.listens_for(User, 'load')
+@event.listens_for(User, 'init')
+def init_subject(target, *args, **kwargs):
+    """
+    Crea una instancia de Subject dentro del objeto User,
+    pasando el propio User (target) como el delegator.
+    """
+    target.subject_delegate = Subject(delegator=target)

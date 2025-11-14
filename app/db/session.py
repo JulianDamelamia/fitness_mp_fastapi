@@ -24,6 +24,11 @@ if DATABASE_URL:
     # Lógica para Local (MySQL)
     elif DATABASE_URL.startswith("mysql://"):
         engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+    # Lógica para Local (SQLite)
+    elif DATABASE_URL.startswith("sqlite"):
+        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
 else:
     raise ValueError(
         "DATABASE_URL no está definida. Asegúrate de tener un .env local o de que esté configurada en producción."

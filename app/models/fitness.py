@@ -56,7 +56,7 @@ class Session(Base):
         secondary=routines_sessions,
         back_populates='sessions'
     )
-    exercises = relationship('Exercise', back_populates='session')
+    exercises = relationship('Exercise', back_populates='session', cascade="all, delete-orphan")
     session_logs = relationship('SessionLog', back_populates='session', cascade="all, delete-orphan")
     
 

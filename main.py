@@ -9,7 +9,7 @@ import os
 from app.db.session import SessionLocal, engine, Base 
 from app.api.dependencies import get_db, get_current_user
 
-from app.api.routes import home, plans, users, routines, exercises, sessions
+from app.api.routes import home, plans, users, routines, exercises, sessions, tracker, notifications
 
 from app.services.user_services import UserService 
 from app.models.user import User, UserRole
@@ -81,3 +81,5 @@ app.include_router(routines.router, prefix="/routines", tags=["Routines"])
 app.include_router(plans.router, prefix="/plans", tags=["Plans & Purchases"])
 app.include_router(exercises.router, prefix="/exercises", tags=["Exercises"])
 app.include_router(sessions.router, prefix="/sessions", tags=["Sessions"])
+app.include_router(tracker.router, prefix="/track", tags=["Tracking"])
+app.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])

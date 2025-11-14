@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from datetime import datetime
 
@@ -9,7 +9,8 @@ from app.api.dependencies import get_db, get_current_user, get_current_trainer
 from app.models.user import User
 from app.models.business import Plan, Purchase
 from app.schemas.business import Plan as PlanSchema, Purchase as PurchaseSchema, PlanCreate
-from app.models.fitness import Routine
+from app.models.fitness import Routine, Session as FitnessSession, Exercise
+from app.services.notification_service import NotificationService
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -32,11 +33,18 @@ def get_available_plans(
     # planes que no estén en la lista de comprados
     plans = db.query(Plan).filter(
         Plan.id.notin_(purchased_plan_ids_subquery)
+    ).options(
+        joinedload(Plan.creator)
     ).all()
+    
+    # Creamos un set (conjunto) de los IDs que el usuario ya sigue
+    following_ids = {user.id for user in current_user.following}
     
     return templates.TemplateResponse("plans.html", {
         "request": request, 
-        "plans": plans
+        "plans": plans,
+        "following_ids": following_ids,
+        "current_user": current_user
     })
 
 
@@ -80,10 +88,18 @@ def purchase_plan(
 def get_my_purchased_plans(
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) # Usuario autenticado
+    current_user: User = Depends(get_current_user)
 ):
-    plans = current_user.purchased_plans
-
+    
+    plans = db.query(Plan)\
+        .join(Purchase, Purchase.plan_id == Plan.id)\
+        .filter(Purchase.user_id == current_user.id)\
+        .options(
+            joinedload(Plan.routines)
+                .joinedload(Routine.sessions)
+                .joinedload(FitnessSession.exercises)
+        )\
+        .all()
     return templates.TemplateResponse("my-plans.html", {
         "request": request,
         "plans": plans
@@ -91,7 +107,6 @@ def get_my_purchased_plans(
 
 # --- ENDPOINTS PARA ENTRENADORES ---
 
-#TODO: mergear con el metodo de crear plan hecho en la HU1
 @router.post("/", response_model=PlanSchema)
 def create_plan(
     title: str = Form(...),
@@ -101,6 +116,11 @@ def create_plan(
     db: Session = Depends(get_db),
     current_trainer: User = Depends(get_current_trainer)
 ):
+    
+    # Creamos una instancia de nuestro Observador
+    notification_service = NotificationService()
+    # Y lo registramos al Sujeto (el entrenador)
+    current_trainer.registerObserver(notification_service)
     # Creamos el plan
     db_plan = Plan(
         title=title,
@@ -120,6 +140,18 @@ def create_plan(
     db.commit()
     db.refresh(db_plan)
 
+    # Notificamos a los observadores
+    #print(f"Notificando sobre el plan: {db_plan.title}") # (Para debug)
+    event_data = {
+        "db": db,
+        "event_type": "NEW_PLAN",
+        "plan": db_plan
+    }
+    current_trainer.notifyObservers(event_data)
+
+    # Damos de baja al observador para no gastar memoria
+    current_trainer.removeObserver(notification_service)
+
     return RedirectResponse(url="/plans/my-creations/", status_code=303)
 
 
@@ -134,8 +166,12 @@ def get_my_created_plans(
     """
     plans = db.query(Plan).filter(Plan.trainer_id == current_trainer.id).all()    
     
-    my_routines = db.query(Routine).filter(Routine.creator_id == current_trainer.id).all()
-
+    my_routines = db.query(Routine).filter(
+        Routine.creator_id == current_trainer.id
+    ).options(
+        joinedload(Routine.sessions).joinedload(FitnessSession.exercises)
+    ).all()
+    
     return templates.TemplateResponse("my-creations.html", {
         "request": request,
         "plans": plans,
@@ -195,3 +231,27 @@ def delete_my_plan(
     db.commit()
     
     return {"message": "Plan eliminado exitosamente"}
+
+@router.post("/{plan_id}/delete")
+def delete_my_plan_form(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    current_trainer: User = Depends(get_current_trainer)
+):
+    """
+    Ruta POST para eliminar un plan desde un formulario HTML.
+    """
+    db_plan = db.query(Plan).filter(Plan.id == plan_id).first()
+
+    if not db_plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    
+    # Verificación de propiedad
+    if db_plan.trainer_id != current_trainer.id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar este plan")
+
+    db.delete(db_plan)
+    db.commit()
+    
+    # Redirigimos de vuelta a la página de gestión
+    return RedirectResponse(url="/plans/my-creations/", status_code=303)
