@@ -1,23 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>{% block title %}App de Entrenamiento{% endblock %}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-</head>
-<body>
-  <nav>
-    <ul>
-      <li><strong><a href="/">Inicio</a></strong></li>
-    </ul>
-    <ul>
-      <li><a href="/routines">Rutinas</a></li>
-      <li><a href="/sessions">Sesiones</a></li>
-    </ul>
-  </nav>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mi App Fitness{% endblock %}</title>
 
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f0ff;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        a {
+            color: #6a11cb;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            padding: 2rem;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #6a11cb;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #2575fc;
+        }
+
+        /* Tarjetas reutilizables */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<header>
+    <h1>Mi App Fitness</h1>
+    <nav>
+        <a href="/routines">Rutinas</a> |
+        <a href="/sessions">Sesiones</a> |
+        <a href="/logout" style="color:white;">Salir</a>
+    </nav>
+</header>
+
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
 </body>
 </html>

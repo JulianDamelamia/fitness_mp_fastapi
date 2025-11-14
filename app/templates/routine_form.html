@@ -1,24 +1,191 @@
 {% extends "base.html" %}
-{% block title %}Nueva Rutina{% endblock %}
+
+{% block title %}Crear Rutina{% endblock %}
+
 {% block content %}
-<h1>Nueva rutina</h1>
-<form action="{{ action_url }}" method="post">
-  <label>Nombre:</label>
-  <input type="text" name="name" value="{{ form_data.get('name', '') }}">
-  {% if errors.get("name") %}
-    <small style="color:red">{{ errors["name"] }}</small>
-  {% endif %}
+<div class="container mt-4">
+    <h2>Crear nueva rutina</h2>
 
-  <h3>Seleccionar sesiones existentes:</h3>
-  {% for s in sessions %}
-    <label>
-      <input type="checkbox" name="session_ids" value="{{ s.id }}"
-        {% if s.id in form_data.get("session_ids", []) %}checked{% endif %}>
-      {{ s.session_name }}  </label><br>
-  {% else %}
-    <p>No hay sesiones disponibles. <a href="/sessions/new">Crear una sesión</a></p>
-  {% endfor %}
+    <!-- FORMULARIO DE RUTINA -->
+    <form id="routine-form">
 
-  <button type="submit">Guardar rutina</button>
-</form>
+        <!-- Nombre de la rutina -->
+        <div class="mb-3">
+            <label class="form-label">Nombre de la rutina</label>
+            <input type="text" id="routine-name" class="form-control" required>
+        </div>
+
+        <hr>
+
+        <!-- Contenedor de sesiones -->
+        <h4>Sesiones</h4>
+        <div id="sessions-container"></div>
+
+        <button type="button" class="btn btn-secondary mt-2" id="add-session-btn">
+            + Agregar sesión
+        </button>
+
+        <hr>
+
+        <!-- Botón submit -->
+        <button type="submit" class="btn btn-primary mt-3">
+            Crear rutina
+        </button>
+    </form>
+</div>
+
+<script>
+// --- Manejo dinámico del formulario ---
+
+const sessionsContainer = document.getElementById("sessions-container");
+const addSessionBtn = document.getElementById("add-session-btn");
+
+// ID incremental de sesiones para diferenciarlas
+let sessionCount = 0;
+
+// ID incremental de ejercicios
+let exerciseCount = 0;
+
+// -------------------------------
+// Agregar nueva sesión
+// -------------------------------
+addSessionBtn.addEventListener("click", () => {
+    const sessionId = sessionCount++;
+    const sessionDiv = document.createElement("div");
+    sessionDiv.classList.add("session-block", "border", "p-3", "mb-3");
+    sessionDiv.dataset.sessionIndex = sessionId;
+
+    sessionDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5>Sesión ${sessionId + 1}</h5>
+            <button type="button" class="btn btn-danger btn-sm remove-session-btn">
+                Eliminar sesión
+            </button>
+        </div>
+
+        <label class="form-label">Nombre de la sesión</label>
+        <input type="text" class="form-control mb-2 session-name">
+
+        <label class="form-label mt-2">O seleccionar existente</label>
+        <select class="form-select session-existing">
+            <option value="">-- Ninguna --</option>
+        </select>
+
+        <h6 class="mt-3">Ejercicios</h6>
+        <div class="exercises-container"></div>
+
+        <button type="button" class="btn btn-sm btn-outline-secondary add-exercise-btn mt-2">
+            + Agregar ejercicio
+        </button>
+    `;
+
+    sessionsContainer.appendChild(sessionDiv);
+
+    // ---------------------------
+    // Agregar ejercicios
+    // ---------------------------
+    const addExerciseBtn = sessionDiv.querySelector(".add-exercise-btn");
+    const exercisesContainer = sessionDiv.querySelector(".exercises-container");
+
+    addExerciseBtn.addEventListener("click", () => {
+        const exDiv = document.createElement("div");
+        exDiv.classList.add("border", "p-2", "mb-2");
+
+        exDiv.innerHTML = `
+            <label class="form-label">Nombre del ejercicio</label>
+            <input type="text" class="form-control mb-2 exercise-name" required>
+
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">Series</label>
+                    <input type="number" class="form-control exercise-sets" min="1">
+                </div>
+
+                <div class="col">
+                    <label class="form-label">Reps</label>
+                    <input type="number" class="form-control exercise-reps" min="1">
+                </div>
+            </div>
+
+            <label class="form-label mt-2">Peso (opcional)</label>
+            <input type="number" step="0.1" class="form-control exercise-weight" placeholder="kg">
+
+            <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-exercise-btn">
+                Quitar ejercicio
+            </button>
+        `;
+
+        exercisesContainer.appendChild(exDiv);
+    });
+});
+
+// -------------------------------
+// Eliminar sesión (delegado global)
+// -------------------------------
+document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove-session-btn")) {
+        e.target.closest(".session-block").remove();
+    }
+});
+
+// -------------------------------
+// Eliminar ejercicio
+// -------------------------------
+document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove-exercise-btn")) {
+        e.target.closest(".border").remove();
+    }
+});
+
+// -------------------------------
+// Envío del formulario como JSON
+// -------------------------------
+document.getElementById("routine-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const routineName = document.getElementById("routine-name").value;
+
+    const sessions = [];
+    document.querySelectorAll(".session-block").forEach(sessionDiv => {
+        const name = sessionDiv.querySelector(".session-name").value.trim();
+        const existing = sessionDiv.querySelector(".session-existing").value;
+
+        const exercises = [];
+        sessionDiv.querySelectorAll(".exercises-container > div").forEach(exDiv => {
+            exercises.push({
+                exercise_name: exDiv.querySelector(".exercise-name").value,
+                target_sets: parseInt(exDiv.querySelector(".exercise-sets").value || 0),
+                target_reps: parseInt(exDiv.querySelector(".exercise-reps").value || 0),
+                weight: exDiv.querySelector(".exercise-weight").value
+                       ? parseFloat(exDiv.querySelector(".exercise-weight").value)
+                       : null
+            });
+        });
+
+        sessions.push({
+            id: existing || null,
+            session_name: name || null,
+            exercises
+        });
+    });
+
+    const payload = {
+        name: routineName,
+        sessions: sessions
+    };
+
+    const response = await fetch("/routines/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+        window.location.href = "/routines";
+    } else {
+        alert("Error al crear la rutina");
+    }
+});
+</script>
+
 {% endblock %}
