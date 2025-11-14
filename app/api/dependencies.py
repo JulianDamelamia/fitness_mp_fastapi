@@ -1,11 +1,11 @@
-from app.db.session import SessionLocal
-from app.db.session import SessionLocal
 from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
+
 from app.core.config import SECRET_KEY, ALGORITHM
 from app.models.user import User, UserRole
-from app.core.security import oauth2_scheme
+from app.db.session import SessionLocal
+
 
 # Dependencia para obtener la sesión de la base de datos
 def get_db():
@@ -24,8 +24,7 @@ def get_token_from_cookie(access_token: str | None = Cookie(None)) -> str | None
 
 
 def get_current_user(
-    token: str = Depends(get_token_from_cookie),
-    db: Session = Depends(get_db)
+    token: str = Depends(get_token_from_cookie), db: Session = Depends(get_db)
 ) -> User:
     """
     Decodifica el token JWT y retorna el objeto User de la base de datos.
@@ -46,12 +45,12 @@ def get_current_user(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     user = db.query(User).filter(User.id == user_id).first()
-    
+
     if user is None:
         raise credentials_exception
-        
+
     return user
 
 
@@ -62,7 +61,7 @@ def get_current_trainer(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != UserRole.TRAINER:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos de entrenador para realizar esta acción"
+            detail="No tienes permisos de entrenador para realizar esta acción",
         )
     return current_user
 
@@ -74,6 +73,6 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acción reservada solo para administradores"
+            detail="Acción reservada solo para administradores",
         )
     return current_user

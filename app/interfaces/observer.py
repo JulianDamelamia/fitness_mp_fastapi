@@ -2,11 +2,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List, Any
 
+
 class Observer(ABC):
 
     @abstractmethod
     def update(self, subject: Subject, event_data: Any) -> None:
         pass
+
 
 class Subject(ABC):
 
@@ -33,13 +35,13 @@ class Subject(ABC):
         try:
             self._observers.remove(observer)
         except ValueError:
-            pass # No pasa nada si el observer no estaba suscrito
+            pass  # No pasa nada si el observer no estaba suscrito
 
     def notifyObservers(self, event_data: Any) -> None:
         """
         Notifica a todos los observadores.
         """
-        for observer in self._observers[:]: 
+        for observer in self._observers[:]:
             # --- INICIO DE MODIFICACIÓN 2 ---
             # Pasamos el 'dueño' (self._delegator, o sea el User)
             # en lugar de 'self' (el objeto Subject).
