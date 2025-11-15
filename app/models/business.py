@@ -46,7 +46,7 @@ class Purchase(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     plan_id = Column(Integer, ForeignKey("plans.id"), nullable=False)
-    purchase_date = Column(DateTime, default=func.now)
+    purchase_date = Column(DateTime, default=func.now())
 
     user = relationship("User", back_populates="purchases")
     plan = relationship("Plan", back_populates="purchases")

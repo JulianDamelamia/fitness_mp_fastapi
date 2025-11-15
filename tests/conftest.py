@@ -1,21 +1,20 @@
+"""Configuraciones y fixtures de pytest para tests de la aplicación FastAPI."""
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.session import Base
-from app.models.user import User
-from app.models.fitness import Routine, Session, Exercise
-from app.models.business import Plan, Purchase
-from app.models.tracker import SessionLog, ExerciseLog
-from app.models.associations import routines_sessions, plans_routines
-
-from main import app as fastapi_app 
 from app.api.dependencies import get_db
+from main import app as fastapi_app
+
 
 # --- Configuración de la Base de Datos de Prueba ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:" 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False)
 
 
@@ -32,19 +31,22 @@ def db_session():
         Base.metadata.drop_all(bind=connection)
         connection.close()
 
+
 @pytest.fixture(scope="function")
 def client(db_session):
     """Crea un cliente de prueba que usa nuestra DB en memoria."""
+
     def override_get_db():
-            yield db_session
+        yield db_session
 
     # Usamos el alias 'fastapi_app'
     fastapi_app.dependency_overrides[get_db] = override_get_db
-    
+
     yield TestClient(fastapi_app)
 
     # Usamos el alias 'fastapi_app' aquí también
     fastapi_app.dependency_overrides.clear()
+
 
 @pytest.fixture(scope="function")
 def authenticated_client(client):
@@ -63,5 +65,5 @@ def authenticated_client(client):
         "/login",
         data={"username_or_email": "testuser", "password": "password"},
     )
-    
+
     yield client
