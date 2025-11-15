@@ -1,3 +1,5 @@
+"""Módulo que define el modelo de Usuario para la aplicación de fitness."""
+
 import enum
 
 from sqlalchemy import Column, Integer, String, Enum, Boolean

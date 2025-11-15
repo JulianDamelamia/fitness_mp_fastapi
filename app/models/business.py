@@ -1,3 +1,5 @@
+"""Módulo que define los modelos de Plan y Purchase para la aplicación de fitness."""
+
 from sqlalchemy import (
     Column,
     Integer,
