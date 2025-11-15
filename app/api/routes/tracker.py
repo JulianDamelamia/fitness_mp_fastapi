@@ -28,7 +28,11 @@ def start_session_tracking(
     Muestra la página de tracking para una sesión de plantilla.
     """
     # Buscamos la sesión de plantilla (ej. "Día de Pecho")
-    session = db.query(FitnessSession).filter(FitnessSession.id == session_id).first()
+    session = db.query(FitnessSession).options(
+        joinedload(FitnessSession.exercises)
+    ).filter(
+        FitnessSession.id == session_id
+    ).first()
 
     if not session:
         raise HTTPException(

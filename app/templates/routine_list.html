@@ -8,12 +8,14 @@
     <h2>Mis Rutinas</h2>
     <a href="/routines/new" role="button">➕ Nueva Rutina</a>
 </div>
+<a href="/dashboard">⬅ Volver al Dashboard</a>
+<hr>
 
 {% if not routines %}
     <p>No tenés rutinas creadas todavía.</p>
 {% endif %}
 
-<div style="margin-top:1.5rem;">
+<div class="grid">
 {% for routine in routines %}
     <article>
         <header>
@@ -22,13 +24,17 @@
         
         <p><strong>Sesiones:</strong> {{ routine.sessions|length }}</p>
 
-        <a href="/routines/{{ routine.id }}" role="button" class="secondary outline">Ver detalle</a>
-
-        <form method="post" action="/routines/{{ routine.id }}/delete" style="margin-top:1rem; margin-bottom: 0;">
-            <button type="submit" class="secondary" style="background-color:#d32f2f; border-color:#d32f2f;">
-                Eliminar
-            </button>
-        </form>
+        <footer>
+            <div role="group">
+                <a href="/routines/{{ routine.id }}" role="button" class="secondary outline">Ver detalle</a>
+                
+                <form method="post" action="/routines/{{ routine.id }}/delete" style="margin: 0;">
+                    <button type="submit" class="secondary" style="background-color:#d32f2f; border-color:#d32f2f;">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+        </footer>
     </article>
 {% endfor %}
 </div>

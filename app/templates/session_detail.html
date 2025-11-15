@@ -2,60 +2,83 @@
 {% block title %}{{ session.session_name }}{% endblock %}
 
 {% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Editando: {{ session.session_name }}</h2>
+</div>
 <a href="/sessions">⬅ Volver a Sesiones</a>
-<h1>{{ session.session_name }}</h1>
-
-<h2>Ejercicios en esta sesión</h2>
-
-{% if session.exercises %}
-    <ul>
-    {% for ex in session.exercises %}
-        <li>
-            <strong>{{ ex.exercise_name }}</strong>
-            ({{ ex.target_sets }} series de {{ ex.target_reps }} reps 
-            
-            {% if ex.target_weight %}
-                con {{ ex.target_weight }}kg
-            {% endif %} 
-            )
-            
-            <form action="/sessions/exercise/{{ ex.id }}/delete" method="post" style="display: inline; margin-left: 10px;">
-                <button type="submit" style="background: transparent; border: none; color: red; cursor: pointer; padding: 0;">
-                    &times;
-                </button>
-            </form>
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>Esta sesión todavía no tiene ejercicios.</p>
-{% endif %}
-
 <hr>
 
-<h3>Añadir nuevo ejercicio</h3>
-<form action="/sessions/{{ session.id }}/add_exercise" method="post">
-    <label>Nombre del Ejercicio:</label>
-    <input type="text" name="exercise_name" required>
-    
-    <label>Series (Sets):</label>
-    <input type="number" name="target_sets" required>
-    
-    <label>Repeticiones (Reps):</label>
-    <input type="number" name="target_reps" required>
-    <label>Peso (Kg) (Opcional):</label>
-    <input type="number" step="0.1" name="target_weight">
+<div class="grid">
 
-    <button type="submit">Añadir Ejercicio</button>
-</form>
+    <div>
+        <h3>Ejercicios en esta sesión</h3>
+        {% if session.exercises %}
+            <ul style="list-style: none; padding-left: 0;">
+            {% for ex in session.exercises %}
+                <li style="border: 1px solid var(--pico-card-border-color); border-radius: var(--pico-border-radius); padding: 1rem; margin-bottom: 1rem;">
+                    <strong>{{ ex.exercise_name }}</strong>
+                    <p style="margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                        {{ ex.target_sets }} series de {{ ex.target_reps }} reps 
+                        {% if ex.target_weight %}
+                            con {{ ex.target_weight }}kg
+                        {% endif %} 
+                    </p>
+                    
+                    <form action="/sessions/exercise/{{ ex.id }}/delete" method="post" style="margin: 0;">
+                        <button type="submit" class="secondary outline" style="margin: 0; padding: 5px 10px; font-size: 0.8em;">
+                            Quitar
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Esta sesión todavía no tiene ejercicios.</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <article>
+            <header>
+                <strong>Añadir nuevo ejercicio</strong>
+            </header>
+            
+            <form action="/sessions/{{ session.id }}/add_exercise" method="post">
+                <label>Nombre del Ejercicio:</label>
+                <input type="text" name="exercise_name" required>
+                
+                <div class="grid">
+                    <div>
+                        <label>Series (Sets):</label>
+                        <input type="number" name="target_sets" required>
+                    </div>
+                    <div>
+                        <label>Reps:</label>
+                        <input type="number" name="target_reps" required>
+                    </div>
+                </div>
+
+                <label>Peso (Kg) (Opcional):</label>
+                <input type="number" step="0.1" name="target_weight">
+
+                <button type="submit">Añadir Ejercicio</button>
+            </form>
+        </article>
+    </div>
+</div>
 
 <hr style="margin-top: 2em; margin-bottom: 2em;">
 
-<h2>Zona de Peligro</h2>
-<form action="/sessions/{{ session.id }}/delete" method="post">
-    <button type"submit" style="background-color: #d9534f; border-color: #d43f3a; color: white;">
-        Eliminar esta sesión permanentemente
-    </button>
-</form>
+<article>
+    <header>
+        <h4 style="color: var(--pico-color-red); margin: 0;">Zona de Peligro</h4>
+    </header>
+    <p><small>Esto eliminará la sesión permanentemente y la quitará de cualquier rutina que la esté usando.</small></p>
+    <form action="/sessions/{{ session.id }}/delete" method="post" style="margin-bottom: 0;">
+        <button type="submit" class="secondary" style="background-color: var(--pico-color-red); border-color: var(--pico-color-red); color: var(--pico-color-white);">
+            Eliminar esta sesión
+        </button>
+    </form>
+</article>
 
 {% endblock %}

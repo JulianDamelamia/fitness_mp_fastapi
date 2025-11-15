@@ -1,19 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Sesiones{% endblock %}
+{% block title %}Mis Sesiones{% endblock %}
+
 {% block content %}
-<h1>Mis Sesiones</h1>
-<a href="/sessions/new" role="button">Nueva Sesión</a>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>Mis Sesiones</h2>
+    <a href="/sessions/new" role="button">➕ Nueva Sesión</a>
+</div>
+<a href="/dashboard">⬅ Volver al Dashboard</a>
 <hr>
-<ul>
-    {% for session in sessions %}
-        <li>
-            <a href="/sessions/{{ session.id }}">{{ session.session_name }}</a>
+
+{% if not sessions %}
+    <p>No tenés sesiones creadas todavía.</p>
+    <p><small>Una "Sesión" es un bloque de construcción (ej: "Día de Pecho") que luego podés reutilizar en distintas "Rutinas".</small></p>
+{% endif %}
+
+<div class="grid">
+{% for session in sessions %}
+    <article>
+        <header>
+            <strong>{{ session.session_name }}</strong>
+        </header>
+
+        <p><small>Ejercicios: {{ session.exercises|length }}</small></p>
+
+        <footer>
+            <a href="/sessions/{{ session.id }}" role="button" class="secondary outline" style="margin-bottom: 0.5rem;">
+                Ver/Editar
+            </a>
             
-            <a href="/track/session/{{ session.id }}" role="button" 
-               style="display: inline-block; padding: 5px 10px; font-size: 0.8em; margin-left: 15px; text-decoration: none;">
+            <a href="/track/session/{{ session.id }}" role="button" style="margin-bottom: 0.5rem;">
                 ▶ Empezar
             </a>
-            </li>No hay sesiones creadas.</li>
-    {% endfor %}
-</ul>
+
+            <form method="post" action="/sessions/{{ session.id }}/delete" style="margin: 0;">
+                <button type="submit" class="secondary" style="margin: 0;">
+                    Eliminar
+                </button>
+            </form>
+        </footer>
+    </article>
+{% endfor %}
+</div>
+
 {% endblock %}

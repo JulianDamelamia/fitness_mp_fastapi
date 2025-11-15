@@ -2,8 +2,10 @@
 {% block title %}Historial de Entrenamientos{% endblock %}
 
 {% block content %}
-<h1>Historial de Entrenamientos</h1>
-<a href="/sessions">⬅ Volver a Sesiones</a>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Historial de Entrenamientos</h1>
+</div>
+<a href="/dashboard">⬅ Volver al Dashboard</a>
 
 <hr>
 
@@ -16,8 +18,8 @@
         </header>
         
         {% for exercise_name, sets in log.exercise_logs|groupby('exercise.exercise_name') %}
-            <strong>{{ exercise_name }}:</strong>
-            <ul>
+            <strong style="display: block; margin-top: 0.5rem;">{{ exercise_name }}:</strong>
+            <ul style="padding-left: 2rem; margin-bottom: 0.5rem;">
                 {% for s in sets %}
                 <li>
                     Set {{ s.set_n }}: {{ s.weight }}kg x {{ s.reps }} reps
@@ -30,7 +32,7 @@
     {% endfor %}
 {% else %}
     <p>Aún no has registrado ningún entrenamiento.</p>
-    <p><a href="/sessions">Empezá uno ahora</a></p>
+    <p><a href="/sessions" role="button" class="secondary">Empezá uno ahora</a></p>
 {% endif %}
 
 {% endblock %}

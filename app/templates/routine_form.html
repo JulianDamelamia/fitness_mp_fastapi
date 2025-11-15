@@ -3,10 +3,14 @@
 {% block title %}Crear Rutina{% endblock %}
 
 {% block content %}
-<div>
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
     <h2>Crear nueva rutina</h2>
+</div>
+<a href="/routines">⬅ Volver a Mis Rutinas</a>
+<hr>
 
-
+<article>
     <form id="routine-form">
         <div>
             <label for="routine-name">Nombre de la rutina</label>
@@ -15,16 +19,18 @@
         <hr>
         <h4>Sesiones</h4>
         <div id="sessions-container"></div>
-        <button type="button" class="secondary" id="add-session-btn">
+        
+        <button type="button" class="secondary" id="add-session-btn" style="margin-bottom: 1rem;">
             + Agregar sesión
         </button>
         <hr>
         <button type="submit">
-            Crear rutina
+            Guardar y Crear rutina
         </button>
     </form>
-</div>
+</article>
 
+{#
 <template id="sessions-template">
     <select>
         <option value="">-- Ninguna --</option>
@@ -33,6 +39,7 @@
         {% endfor %}
     </select>
 </template>
+#}
 
 
 <script>
@@ -58,11 +65,7 @@ addSessionBtn.addEventListener("click", () => {
         </header>
         
         <label for="session-name-${sessionId}">Nombre de la sesión</label>
-        <input type="text" id="session-name-${sessionId}" class="session-name">
-        
-        <label for="session-existing-${sessionId}" style="margin-top: 1em;">O seleccionar existente</label>
-        <select id="session-existing-${sessionId}" class="session-existing">
-            </select>
+        <input type="text" id="session-name-${sessionId}" class="session-name" required>
         
         <h6 style="margin-top: 1em; margin-bottom: 0.5em;">Ejercicios</h6>
         <div class="exercises-container"></div>
@@ -73,21 +76,15 @@ addSessionBtn.addEventListener("click", () => {
 
     sessionsContainer.appendChild(sessionArticle);
 
-    // --- INICIO DE CORRECCIÓN (Lógica de JS) ---
-    // 1. Buscamos el <select> vacío que acabamos de crear
+    // PASO 3: Comentamos la lógica de JS que poblaba el dropdown
+    /*
     const selectElement = sessionArticle.querySelector(".session-existing");
-
-    // 2. Buscamos nuestro "molde"
     const template = document.getElementById("sessions-template");
-
-    // 3. Obtenemos el contenido del molde (esta es la forma correcta)
     const templateContent = template.content.querySelector("select");
-
-    // 4. Copiamos el HTML de las opciones del molde al <select> vacío
     if (selectElement && templateContent) {
         selectElement.innerHTML = templateContent.innerHTML;
     }
-    // --- FIN DE CORRECCIÓN (Lógica de JS) ---
+    */
 });
 
 // (El resto del script de delegación de eventos y submit no cambia)
@@ -98,18 +95,19 @@ document.addEventListener("click", (e) => {
         
         if (exercisesContainer && exercisesContainer.classList.contains("exercises-container")) {
             const exDiv = document.createElement("div");
-            exDiv.style = "border: 1px solid #ddd; padding: 1em; margin-bottom: 1em; border-radius: 8px;";
+            // Usamos variables de Pico.css para los bordes, para que matchee el theme
+            exDiv.style = "border: 1px solid var(--pico-card-border-color); padding: 1em; margin-bottom: 1em; border-radius: var(--pico-border-radius);";
             exDiv.innerHTML = `
                 <label>Nombre del ejercicio</label>
                 <input type="text" class="exercise-name" required>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 1em; margin-top: 1em;">
                     <div>
                         <label>Series</label>
-                        <input type="number" class="exercise-sets" min="1">
+                        <input type="number" class="exercise-sets" min="1" required>
                     </div>
                     <div>
                         <label>Reps</label>
-                        <input type="number" class="exercise-reps" min="1">
+                        <input type="number" class="exercise-reps" min="1" required>
                     </div>
                 </div>
                 <label style="margin-top: 1em;">Peso (opcional)</label>
@@ -139,7 +137,10 @@ document.getElementById("routine-form").addEventListener("submit", async (e) => 
     const sessions = [];
     document.querySelectorAll(".session-block").forEach(sessionDiv => {
         const name = sessionDiv.querySelector(".session-name").value.trim();
-        const existing = sessionDiv.querySelector(".session-existing").value;
+        
+        // PASO 4: Hardcodeamos 'existing' a null para que siempre cree una nueva sesión
+        const existing = null;
+        // const existing = sessionDiv.querySelector(".session-existing").value; // <-- Línea original comentada
 
         const exercises = [];
         sessionDiv.querySelectorAll(".exercises-container > div").forEach(exDiv => {

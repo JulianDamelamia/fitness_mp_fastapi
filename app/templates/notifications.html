@@ -2,12 +2,25 @@
 {% block title %}Notificaciones{% endblock %}
 
 {% block content %}
+
+{% set has_unread = false %}
+{% for notif in notifications %}
+    {% if not notif.is_read %}
+        {% set has_unread = true %}
+    {% endif %}
+{% endfor %}
+
 <div style="display: flex; justify-content: space-between; align-items: center;">
     <h1>Notificaciones</h1>
-    <form action="/notifications/mark_as_read" method="post">
-        <button type="submit">Marcar todas como leídas</button>
+    
+    {% if has_unread %}
+    <form action="/notifications/mark_as_read" method="post" style="margin: 0;">
+        <button type="submit" class="secondary">Marcar todas como leídas</button>
     </form>
+    {% endif %}
 </div>
+
+<a href="/dashboard">⬅ Volver al Dashboard</a>
 <hr>
 
 {% if notifications %}
@@ -17,9 +30,9 @@
     
         <li class="notification-item {% if not notif.is_read %}unread{% endif %}">
         
-            <p>{{ notif.message }}</p>
-            <small style="color: #777;">
-                {{ notif.created_at }}
+            <p style="margin: 0 0 0.25rem 0;">{{ notif.message }}</p>
+            <small>
+                {{ notif.created_at.strftime('%Y-%m-%d a las %H:%M') }}
             </small>
         </li>
     {% endfor %}

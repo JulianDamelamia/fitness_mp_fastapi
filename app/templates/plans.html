@@ -1,56 +1,55 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Catálogo de Planes</title>
-    <style>
-        body { font-family: sans-serif; padding: 2em; }
-        .plan { border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em; }
-        .plan h2 { margin-top: 0; }
-        button { background-color: #28a745; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #218838; }
-    </style>
-</head>
-<body>
-    <h1>Planes Disponibles</h1>
-    <a href="/dashboard">Volver al Dashboard</a>
-    <hr>
-    
-    {% if plans %}
-        {% for plan in plans %}
-            <div class="plan">
-                <h2>{{ plan.title }}</h2>
-                
-                <p>
-                    <strong>Creado por:</strong> 
-                    {{ plan.creator.username }} 
-                    
-                    {% if plan.creator.id != current_user.id %}
-                        
-                        {% if plan.creator.id in following_ids %}
-                            <form action="/users/unfollow/{{ plan.creator.id }}" method="post" style="display: inline; margin-left: 10px;">
-                                <button type="submit" class="secondary outline">Dejar de Seguir</button>
-                            </form>
-                        
-                        {% else %}
-                            <form action="/users/follow/{{ plan.creator.id }}" method="post" style="display: inline; margin-left: 10px;">
-                                <button type="submit" class="primary">Seguir</button>
-                            </form>
-                        {% endif %}
+{% extends "base.html" %}
+{% block title %}Catálogo de Planes{% endblock %}
 
-                    {% endif %}
-                </p>
-                <p>{{ plan.description or 'Sin descripción.' }}</p>
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Catálogo de Planes</h1>
+</div>
+<a href="/dashboard">⬅ Volver al Dashboard</a>
+<hr>
+
+{% if not plans %}
+    <p>No hay planes disponibles en este momento.</p>
+{% endif %}
+
+<div class="grid">
+    {% for plan in plans %}
+        <article>
+            <header>
+                <h2>{{ plan.title }}</h2>
                 <p><strong>Precio:</strong> ${{ plan.price }}</p>
+            </header>
+            
+            <p>
+                <strong>Creado por:</strong> 
+                {{ plan.creator.username }} 
                 
+                {% if plan.creator.id != current_user.id %}
+                    
+                    {% if plan.creator.id in following_ids %}
+                        <form action="/users/unfollow/{{ plan.creator.id }}" method="post" style="display: inline; margin-left: 10px;">
+                            <button type="submit" class="secondary outline" style="padding: 5px 10px; font-size: 0.8em;">Dejar de Seguir</button>
+                        </form>
+                    
+                    {% else %}
+                        <form action="/users/follow/{{ plan.creator.id }}" method="post" style="display: inline; margin-left: 10px;">
+                            <button type="submit" style="padding: 5px 10px; font-size: 0.8em;">Seguir</button>
+                        </form>
+                    {% endif %}
+
+                {% endif %}
+            </p>
+            <p>{{ plan.description or 'Sin descripción.' }}</p>
+            
+            <footer>
                 <form action="/plans/purchase" method="post">
                     <input type="hidden" name="plan_id" value="{{ plan.id }}">
-                    <button type="submit">Comprar</button>
+                    <button type="submit">Comprar Plan</button>
                 </form>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No hay planes disponibles en este momento.</p>
-    {% endif %}
-</body>
-</html>
+            </footer>
+        </article>
+    {% endfor %}
+</div>
+
+{% endblock %}

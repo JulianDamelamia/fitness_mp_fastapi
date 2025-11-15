@@ -97,10 +97,8 @@ def approve_trainer(
     user_to_approve.role = UserRole.TRAINER
     user_to_approve.is_pending_trainer = False
     db.commit()
-
-    return UserResponse(
-        username=username, message="Usuario aprobado como entrenador exitosamente"
-    )
+    
+    return RedirectResponse(url="/admin/panel", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/follow/{user_id}")
