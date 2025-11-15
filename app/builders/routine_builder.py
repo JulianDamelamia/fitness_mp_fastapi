@@ -1,3 +1,5 @@
+"""Construcción y actualización de rutinas de fitness con sesiones y ejercicios."""
+
 from typing import List
 from app.models.fitness import Routine, Session, Exercise
 from app.errors.errors import EntityNotFoundError, ValidationError
