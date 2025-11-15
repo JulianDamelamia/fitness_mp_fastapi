@@ -41,7 +41,11 @@ def delete_user(
     db.delete(user_to_delete)
     db.commit()
 
-    return UserResponse(username=username, message="Usuario eliminado exitosamente")
+    return UserResponse(
+        username=username,
+        id=user_to_delete.id,
+        message="Usuario eliminado exitosamente",
+    )
 
 
 @router.post("/request-trainer", response_model=UserResponse)

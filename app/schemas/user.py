@@ -23,7 +23,7 @@ class UserLogin(UserBase):
 
 class UserResponse(UserBase):
     id: int
-    email: str
+    email: Optional[str] = None
     message: Optional[str] = None
 
 
