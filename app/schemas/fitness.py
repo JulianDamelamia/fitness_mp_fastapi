@@ -1,3 +1,6 @@
+"""Módulo que define los esquemas Pydantic para rutinas, sesiones y ejercicios
+en la aplicación de fitness."""
+
 # app/schemas/fitness.py
 from typing import List, Optional
 from pydantic import BaseModel

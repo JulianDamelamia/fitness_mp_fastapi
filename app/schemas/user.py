@@ -1,3 +1,5 @@
+"""Módulo que define los esquemas Pydantic para usuarios y autenticación en la aplicación de fitness."""
+
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 
