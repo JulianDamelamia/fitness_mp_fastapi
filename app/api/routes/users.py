@@ -1,3 +1,5 @@
+"""Rutas de la API para la gestión de usuarios."""
+
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, status, Request
@@ -39,7 +41,11 @@ def delete_user(
     db.delete(user_to_delete)
     db.commit()
 
-    return UserResponse(username=username, message="Usuario eliminado exitosamente")
+    return UserResponse(
+        username=username,
+        id=user_to_delete.id,
+        message="Usuario eliminado exitosamente",
+    )
 
 
 @router.post("/request-trainer", response_model=UserResponse)
@@ -97,7 +103,7 @@ def approve_trainer(
     user_to_approve.role = UserRole.TRAINER
     user_to_approve.is_pending_trainer = False
     db.commit()
-    
+
     return RedirectResponse(url="/admin/panel", status_code=status.HTTP_303_SEE_OTHER)
 
 

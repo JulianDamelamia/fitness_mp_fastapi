@@ -1,3 +1,5 @@
+"""Módulo que define los esquemas Pydantic para usuarios y autenticación en la aplicación de fitness."""
+
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 
@@ -21,7 +23,7 @@ class UserLogin(UserBase):
 
 class UserResponse(UserBase):
     id: int
-    email: str
+    email: Optional[str] = None
     message: Optional[str] = None
 
 

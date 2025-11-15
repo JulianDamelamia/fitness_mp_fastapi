@@ -1,6 +1,4 @@
-# app/models/fitness.py
-from app.db.session import Base
-from app.models.associations import routines_sessions, plans_routines
+"""Módulo que define los modelos de rutina y sesión para la aplicación de fitness."""
 
 from sqlalchemy import (
     Column,
@@ -11,6 +9,9 @@ from sqlalchemy import (
     Float,
 )
 from sqlalchemy.orm import relationship
+
+from app.db.session import Base
+from app.models.associations import routines_sessions, plans_routines
 
 
 # Formato:

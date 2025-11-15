@@ -1,11 +1,15 @@
+"""Módulo que implementa servicios para gestionar rutinas de ejercicio en la aplicación de fitness."""
+
 from typing import List
 from sqlalchemy.orm import Session as db_Session
 from sqlalchemy import and_
 
-from app.models.fitness import Routine, Session, Exercise
+from app.models.fitness import Routine, Session
 from app.models.associations import routines_sessions
 from app.builders.routine_builder import RoutineBuilder, SessionBuilder
-from app.errors.errors import EntityNotFoundError,ValidationError 
+from app.errors.errors import EntityNotFoundError, ValidationError
+
+
 class RoutineService:
     """Servicio para gestionar operaciones relacionadas con rutinas de ejercicio
     vinculando los builders con las acciones sobre la base de datos
@@ -27,12 +31,13 @@ class RoutineService:
         """
         if not getattr(routine_data, "name", None):
             raise ValidationError("La rutina requiere un nombre")
-        
+
         if not getattr(routine_data, "sessions", None):
             raise ValidationError("La rutina debe incluir al menos una sesión")
-        
+
         routine = RoutineBuilder.create_routine(
-            routine_data=routine_data, creator_id=current_user_id, db=db)
+            routine_data=routine_data, creator_id=current_user_id, db=db
+        )
 
         for s_data in routine_data.sessions:
             if not getattr(s_data, "session_name", None):
@@ -46,7 +51,7 @@ class RoutineService:
         db.commit()
         db.refresh(routine)
         return routine
-    
+
     @staticmethod
     def update_routine(routine_id, routine_data, db, current_user_id):
         """Actualiza una rutina existente.
@@ -70,7 +75,7 @@ class RoutineService:
 
         if getattr(routine_data, "name", None):
             routine.name = routine_data.name
- 
+
         if not getattr(routine_data, "sessions", None):
             db.commit()
             db.refresh(routine)
@@ -79,28 +84,36 @@ class RoutineService:
         updated_sessions = []
         for session_data in routine_data.sessions:
             if getattr(session_data, "id", None):
-                session = db.query(Session).filter(Session.id == session_data.id).first()
+                session = (
+                    db.query(Session).filter(Session.id == session_data.id).first()
+                )
                 if not session:
-                    raise EntityNotFoundError(f"Session ID {session_data.id} no encontrada")
+                    raise EntityNotFoundError(
+                        f"Session ID {session_data.id} no encontrada"
+                    )
                 session = SessionBuilder.update_session(session, session_data, db)
             else:
                 # Nueva sesión
-                session = SessionBuilder.create_session(session_data.session_name, session_data.exercises, db)
+                session = SessionBuilder.create_session(
+                    session_data.session_name, session_data.exercises, db
+                )
 
             updated_sessions.append(session)
-        
+
         for s in updated_sessions:
             if s not in routine.sessions:
                 routine.sessions.append(s)
         db.commit()
         db.refresh(routine)
         return routine
-    
+
     @staticmethod
     def delete_sessions(routine: Routine, session_ids: List[int], db):
         """Elimina de una rutina las sesiones cuyos IDs se indiquen."""
         if not session_ids:
-            raise ValidationError("Debe especificar al menos un ID de sesión a eliminar")
+            raise ValidationError(
+                "Debe especificar al menos un ID de sesión a eliminar"
+            )
 
         deleted = []
         for sid in session_ids:
@@ -109,18 +122,19 @@ class RoutineService:
             # JOIN routines_session AS rs ON s.id = rs.session_id
             # WHERE rs.routine_id = :routine_ids AND s.id = :session_id
             session = (
-                    db.query(Session)
-                    .join(routines_sessions, Session.id == routines_sessions.c.session_id)
-                    .filter(
-                        and_(
-                            routines_sessions.c.routine_id == routine.id,
-                            Session.id == sid
-                        )
+                db.query(Session)
+                .join(routines_sessions, Session.id == routines_sessions.c.session_id)
+                .filter(
+                    and_(
+                        routines_sessions.c.routine_id == routine.id, Session.id == sid
                     )
-            .first()
-        )
+                )
+                .first()
+            )
             if not session:
-                raise EntityNotFoundError(f"La sesión con ID {sid} no existe en esta rutina")
+                raise EntityNotFoundError(
+                    f"La sesión con ID {sid} no existe en esta rutina"
+                )
             db.delete(session)
             deleted.append(sid)
         return deleted

@@ -1,3 +1,6 @@
+"""Módulo que define los esquemas Pydantic para planes de entrenamiento
+y compras en la aplicación de fitness."""
+
 from typing import Optional
 from datetime import datetime
 

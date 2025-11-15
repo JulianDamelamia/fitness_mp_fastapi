@@ -1,6 +1,8 @@
-from app.db.session import Base
+"""Módulo que define el modelo de Notificación para la aplicación de fitness."""
+
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
+from app.db.session import Base
 
 
 class Notification(Base):

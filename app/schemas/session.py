@@ -1,3 +1,6 @@
+"""Módulo que define los esquemas Pydantic para sesiones de entrenamiento
+y registros de ejercicios en la aplicación de fitness."""
+
 from typing import List
 
 from datetime import date

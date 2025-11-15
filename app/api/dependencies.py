@@ -1,3 +1,5 @@
+"""Dependencias de la API para la autenticación y autorización de usuarios."""
+
 from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError

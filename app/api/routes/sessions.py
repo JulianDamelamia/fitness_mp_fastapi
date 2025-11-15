@@ -1,3 +1,4 @@
+""" Rutas de la API para la gestión de sesiones de fitness."""
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, Request, HTTPException

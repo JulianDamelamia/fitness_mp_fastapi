@@ -1,3 +1,5 @@
+"""Configuración de la base de datos utilizando SQLAlchemy."""
+
 import os
 from dotenv import load_dotenv
 

@@ -1,3 +1,8 @@
+"""
+Rutas de la API para la gestión de ejercicios de fitness.
+Proporciona endpoints para crear, leer y consultar ejercicios individuales.
+"""
+
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
