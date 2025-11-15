@@ -1,3 +1,5 @@
+"""Rutas de la API para la gestión de usuarios."""
+
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, status, Request
@@ -97,7 +99,7 @@ def approve_trainer(
     user_to_approve.role = UserRole.TRAINER
     user_to_approve.is_pending_trainer = False
     db.commit()
-    
+
     return RedirectResponse(url="/admin/panel", status_code=status.HTTP_303_SEE_OTHER)
 
 

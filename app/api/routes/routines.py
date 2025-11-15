@@ -1,3 +1,5 @@
+"""Rutas de la API para la gestión de rutinas de fitness."""
+
 import traceback
 
 from fastapi import APIRouter, Depends, Request, HTTPException, status
