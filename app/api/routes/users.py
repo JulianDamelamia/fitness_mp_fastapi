@@ -1,13 +1,15 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Header, Request
+from typing import List
+
+from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.api.dependencies import get_db, get_current_user, get_current_admin
 from app.models.user import User, UserRole
 from app.schemas.user import UserResponse
 
 router = APIRouter()
+
 
 @router.get("/", response_model=list[str])
 def list_users(db: Session = Depends(get_db)):
@@ -21,27 +23,29 @@ def list_users(db: Session = Depends(get_db)):
 @router.delete("/{username}", response_model=UserResponse)
 def delete_user(
     username: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
     # TODO que solo un admin pueda borrar usuarios.
 ):
     """
     Elimina un usuario de la base de datos real.
     """
     user_to_delete = db.query(User).filter(User.username == username).first()
-    
+
     if not user_to_delete:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
+        )
+
     db.delete(user_to_delete)
     db.commit()
-    
+
     return UserResponse(username=username, message="Usuario eliminado exitosamente")
 
 
 @router.post("/request-trainer", response_model=UserResponse)
 def request_trainer_status(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) # <-- Usuario logueado
+    current_user: User = Depends(get_current_user),  # <-- Usuario logueado
 ):
     """
     El usuario logueado solicita convertirse en entrenador.
@@ -53,25 +57,22 @@ def request_trainer_status(
 
     current_user.is_pending_trainer = True
     db.commit()
-    
+
     return UserResponse(
-        username=current_user.username, 
-        message="Solicitud para ser entrenador enviada. Pendiente de aprobación."
+        username=current_user.username,
+        message="Solicitud para ser entrenador enviada. Pendiente de aprobación.",
     )
 
 
 @router.get("/admin/pending-trainers", response_model=List[str])
 def get_pending_trainers(
-    db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin)
+    db: Session = Depends(get_db), admin: User = Depends(get_current_admin)
 ):
     """
     (Admin) Lista los usuarios pendientes de aprobación como entrenadores.
     """
-    pending_users = db.query(User).filter(
-        User.is_pending_trainer == True
-    ).all()
-    
+    pending_users = db.query(User).filter(User.is_pending_trainer == True).all()
+
     return [user.username for user in pending_users]
 
 
@@ -79,17 +80,19 @@ def get_pending_trainers(
 def approve_trainer(
     username: str,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin)
+    admin: User = Depends(get_current_admin),
 ):
     """
     (Admin) Aprueba a un usuario como entrenador.
     """
     user_to_approve = db.query(User).filter(User.username == username).first()
-    
+
     if not user_to_approve:
         raise HTTPException(status_code=4.04, detail="Usuario no encontrado")
     if not user_to_approve.is_pending_trainer:
-        raise HTTPException(status_code=400, detail="El usuario no tiene una solicitud pendiente")
+        raise HTTPException(
+            status_code=400, detail="El usuario no tiene una solicitud pendiente"
+        )
 
     user_to_approve.role = UserRole.TRAINER
     user_to_approve.is_pending_trainer = False
@@ -97,12 +100,13 @@ def approve_trainer(
     
     return RedirectResponse(url="/admin/panel", status_code=status.HTTP_303_SEE_OTHER)
 
+
 @router.post("/follow/{user_id}")
 def follow_user(
     user_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     user_to_follow = db.query(User).filter(User.id == user_id).first()
     if not user_to_follow:
@@ -127,7 +131,7 @@ def unfollow_user(
     user_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     user_to_unfollow = db.query(User).filter(User.id == user_id).first()
     if not user_to_unfollow:

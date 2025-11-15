@@ -1,17 +1,20 @@
-from fastapi import APIRouter, Form, HTTPException, Request, status, Depends
-from pydantic import EmailStr
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse, HTMLResponse
 from typing import Optional
 
-from app.services.user_services import UserService
-from app.schemas.user import TokenResponse
-from app.services.auth_service import authenticate_user
-from app.core.security import create_access_token
+from fastapi import APIRouter, Form, Request, Depends, status
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse, HTMLResponse
+
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
-from app.api.dependencies import get_db
-from app.api.dependencies import get_current_user, get_current_admin, get_current_trainer
+
+from app.services.user_services import UserService
 from app.models.user import User, UserRole
+from app.api.dependencies import get_db
+from app.api.dependencies import (
+    get_current_user,
+    get_current_admin,
+)
+
 
 router = APIRouter(tags=["Home"])
 user_service = UserService()
@@ -24,16 +27,19 @@ async def get_root():
     """
     return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
+@router.get("/")
+async def get_root():
+    """
+    Redirecciona la ruta raíz ("/") a la página de login.
+    """
+    return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.get("/register", response_class=HTMLResponse)
 def register_get(request: Request):
     return templates.TemplateResponse(
-                                    request,
-                                    "register.html", 
-                                        {
-                                        "form_data": {}, 
-                                        "errors": {}
-                                        }
-                                    )
+        request, "register.html", {"form_data": {}, "errors": {}}
+    )
 
 
 @router.post("/register")
@@ -44,43 +50,37 @@ async def register_post(
     password: str = Form(...),
     confirm_password: str = Form(...),
     trainer_request: Optional[str] = Form(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     errors = {}
-    form_data = {"username": username, "email": email} # Para repoblar el form si falla
 
     if password != confirm_password:
         errors["password"] = "Las contraseñas no coinciden"
-    
+
     try:
         EmailStr._validate(email)
     except ValueError:
         errors["email"] = "El email no tiene un formato válido"
 
     try:
-       user_service.validate_unique_user(db, username, email)
+        user_service.validate_unique_user(db, username, email)
     except ValueError as e:
-         errors["username"] = str(e)
+        errors["username"] = str(e)
 
     if errors:
         return templates.TemplateResponse(
             request,
             "register.html",
-            {"errors": errors,
-             "form_data": {"username": username, "email": email}}
+            {"errors": errors, "form_data": {"username": username, "email": email}},
         )
-    
+
     # Si el checkbox fue marcado, is_trainer será "true"
-    pending_status = (trainer_request == "true")
+    pending_status = trainer_request == "true"
     # Llamamos al servicio actualizado
     user_service.create_user(
-        db, 
-        username, 
-        email, 
-        password, 
-        is_pending_trainer=pending_status
+        db, username, email, password, is_pending_trainer=pending_status
     )
-    
+
     return RedirectResponse(url="/login", status_code=303)
 
 
@@ -88,24 +88,21 @@ async def register_post(
 def login_get(request: Request):
     return templates.TemplateResponse(request, "login.html", {})
 
+
 @router.post("/login")
 async def login_post(
     request: Request,
     username_or_email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
-    ):
+    db: Session = Depends(get_db),
+):
 
-    user = authenticate_user(db, username_or_email, password)
-    
     try:
         token = user_service.login(db, username_or_email, password)
     except ValueError as e:
         # Si falla, renderiza la plantilla de login con el error
-        return templates.TemplateResponse(request, "login.html", {
-            "error": str(e)
-        })
-    
+        return templates.TemplateResponse(request, "login.html", {"error": str(e)})
+
     response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
@@ -113,8 +110,7 @@ async def login_post(
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def get_dashboard(
-    request: Request, 
-    current_user: User = Depends(get_current_user)
+    request: Request, current_user: User = Depends(get_current_user)
 ):
     """
     Página principal del usuario después de iniciar sesión.
@@ -122,33 +118,39 @@ async def get_dashboard(
     # Si es admin, redirigir directo al panel de admin
     if current_user.role == UserRole.ADMIN:
         return RedirectResponse(url="/admin/panel", status_code=303)
-    
-    return templates.TemplateResponse(request, "dashboard.html", {
-        "username": current_user.username,
-        "role": current_user.role.value
-    })
+
+    return templates.TemplateResponse(
+        request,
+        "dashboard.html",
+        {"username": current_user.username, "role": current_user.role.value},
+    )
 
 
 @router.get("/admin/panel", response_class=HTMLResponse)
 async def get_admin_panel(
     request: Request,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin) # Solo Admins
+    admin: User = Depends(get_current_admin),  # Solo Admins
 ):
     """
     Sirve la página de gestión de entrenadores.
     """
     # Buscamos los usuarios que están pendientes de aprobación
-    pending_trainers = db.query(User).filter(
-        User.is_pending_trainer == True,
-        User.role == UserRole.USER
-    ).all()
-    
-    return templates.TemplateResponse("admin-panel.html", {
-        "request": request,
-        "username": admin.username,
-        "pending_trainers": pending_trainers
-    })
+    pending_trainers = (
+        db.query(User)
+        .filter(User.is_pending_trainer == True, User.role == UserRole.USER)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        "admin-panel.html",
+        {
+            "request": request,
+            "username": admin.username,
+            "pending_trainers": pending_trainers,
+        },
+    )
+
 
 # @router.get("/me", response_model=UserProfileResponse)
 # def read_me(token: TokenResponse):
