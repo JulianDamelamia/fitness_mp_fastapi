@@ -1,3 +1,5 @@
+"""Rutas de la API para el seguimiento de sesiones de fitness."""
+
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request, HTTPException
@@ -28,11 +30,12 @@ def start_session_tracking(
     Muestra la página de tracking para una sesión de plantilla.
     """
     # Buscamos la sesión de plantilla (ej. "Día de Pecho")
-    session = db.query(FitnessSession).options(
-        joinedload(FitnessSession.exercises)
-    ).filter(
-        FitnessSession.id == session_id
-    ).first()
+    session = (
+        db.query(FitnessSession)
+        .options(joinedload(FitnessSession.exercises))
+        .filter(FitnessSession.id == session_id)
+        .first()
+    )
 
     if not session:
         raise HTTPException(

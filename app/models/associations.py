@@ -1,3 +1,5 @@
+"""Módulo que define las asociaciones entre las tablas de la base de datos."""
+
 # para resolver importaciones circulares
 from sqlalchemy import Table, Column, ForeignKey
 from app.db.session import Base

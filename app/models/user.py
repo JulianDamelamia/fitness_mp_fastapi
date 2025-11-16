@@ -1,3 +1,5 @@
+"""Módulo que define el modelo de Usuario para la aplicación de fitness."""
+
 import enum
 
 from sqlalchemy import Column, Integer, String, Enum, Boolean
@@ -88,7 +90,7 @@ class User(Base):
 
 @event.listens_for(User, "load")
 @event.listens_for(User, "init")
-def init_subject(target):
+def init_subject(target, *args, **kwargs):
     """
     Crea una instancia de Subject dentro del objeto User,
     pasando el propio User (target) como el delegator.

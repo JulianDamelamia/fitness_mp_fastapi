@@ -1,3 +1,8 @@
+"""
+Módulo que define las rutas de FastAPI para la página principal, registro, login,
+dashboard y panel de administración.
+"""
+
 from typing import Optional
 
 from fastapi import APIRouter, Form, Request, Depends, status
@@ -20,12 +25,6 @@ router = APIRouter(tags=["Home"])
 user_service = UserService()
 templates = Jinja2Templates(directory="app/templates")
 
-@router.get("/")
-async def get_root():
-    """
-    Redirecciona la ruta raíz ("/") a la página de login.
-    """
-    return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
 @router.get("/")
 async def get_root():

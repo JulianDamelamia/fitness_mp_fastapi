@@ -1,3 +1,5 @@
+""" Módulo de seguridad para hashing de contraseñas y creación de tokens JWT."""
+
 from datetime import datetime, timedelta, timezone
 
 from jose import jwt

@@ -1,6 +1,9 @@
+"""Módulo que define los modelos de registro de sesiones
+y ejercicios para la aplicación de fitness."""
+
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base

@@ -1,3 +1,7 @@
+"""
+Rutas de la API para la gestión de notificaciones de usuarios.
+"""
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates

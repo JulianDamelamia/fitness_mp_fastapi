@@ -1,5 +1,7 @@
-from sqlalchemy.orm import Session
+"""Módulo que implementa el servicio de notificaciones utilizando el patrón Observer."""
+
 from typing import Any
+from sqlalchemy.orm import Session
 
 from app.interfaces.observer import Observer, Subject
 from app.models.user import User
@@ -17,7 +19,7 @@ class NotificationService(Observer):
         """
         El método 'update' es llamado por el Sujeto (notifyObservers).
         """
-        
+
         # Extraemos los datos del evento
         try:
             db: Session = event_data["db"]
@@ -31,31 +33,25 @@ class NotificationService(Observer):
         if event_type == "NEW_PLAN" and isinstance(subject, User):
             trainer: User = subject
             message = f"{trainer.username} ha publicado un nuevo plan: {plan.title}"
-            
+
             # Buscamos a los seguidores del entrenador
             followers = trainer.followed_by
-            
+
             for follower in followers:
-                new_notification = Notification(
-                    message=message,
-                    user_id=follower.id
-                )
+                new_notification = Notification(message=message, user_id=follower.id)
                 db.add(new_notification)
 
         # Notificar a los compradores
         if event_type == "UPDATED_PLAN":
             message = f"El plan '{plan.title}' que compraste ha sido actualizado."
-            
+
             # Buscamos a los compradores del plan
             buyers = plan.buyers
-            
+
             for buyer in buyers:
-                new_notification = Notification(
-                    message=message,
-                    user_id=buyer.id
-                )
+                new_notification = Notification(message=message, user_id=buyer.id)
                 db.add(new_notification)
-        
+
         try:
             db.commit()
         except Exception as e:

@@ -1,10 +1,13 @@
+"""Tests para las operaciones de compra en la base de datos de la aplicación de fitness."""
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-from app.models import User,Plan, Purchase
+from app.models import User, Plan, Purchase
 
 from app.db.session import Base
+
 
 @pytest.fixture
 def session():
@@ -15,24 +18,20 @@ def session():
     yield db
     db.close()
 
+
 def test_user_can_purchase_plan(session):
     user = User(username="alice")
-    plan = Plan(name="Plan Full Body", price=1000, creator=user)
+    plan = Plan(title="Plan Full Body", price=1000, creator=user)
     session.add_all([user, plan])
     session.commit()
 
-    purchase = Purchase(
-        user_id=user.id,
-        plan_id=plan.id,
-        validation_code="ABC123"
-    )
+    purchase = Purchase(user_id=user.id, plan_id=plan.id)
     session.add(purchase)
     session.commit()
 
     assert purchase.id is not None
     assert purchase.user_id == user.id
     assert purchase.plan_id == plan.id
-    assert purchase.validation_code == "ABC123"
 
     session.refresh(user)
     session.refresh(plan)
@@ -43,32 +42,15 @@ def test_user_can_purchase_plan(session):
     assert user.purchases[0].plan == plan
 
 
-def test_validation_code_must_be_unique(session):
-    user = User(username="bob")
-    plan = Plan(name="Plan Fuerza", price=1200, creator=user)
-    session.add_all([user, plan])
-    session.commit()
-
-    session.add(Purchase(user_id=user.id, plan_id=plan.id, validation_code="UNIQUECODE"))
-    session.commit()
-
-    dup = Purchase(user_id=user.id, plan_id=plan.id, validation_code="UNIQUECODE")
-    session.add(dup)
-
-    with pytest.raises(IntegrityError):
-        session.commit()
-        session.rollback()
-
-
 def test_user_can_have_multiple_purchases(session):
     user = User(username="carol")
-    plan1 = Plan(name="Plan Principiante", price=800, creator=user)
-    plan2 = Plan(name="Plan Avanzado", price=1500,creator=user)
+    plan1 = Plan(title="Plan Principiante", price=800, creator=user)
+    plan2 = Plan(title="Plan Avanzado", price=1500, creator=user)
     session.add_all([user, plan1, plan2])
     session.commit()
 
-    purchase1 = Purchase(user_id=user.id, plan_id=plan1.id, validation_code="P1")
-    purchase2 = Purchase(user_id=user.id, plan_id=plan2.id, validation_code="P2")
+    purchase1 = Purchase(user_id=user.id, plan_id=plan1.id)
+    purchase2 = Purchase(user_id=user.id, plan_id=plan2.id)
     session.add_all([purchase1, purchase2])
     session.commit()
 
